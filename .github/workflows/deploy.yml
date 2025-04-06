@@ -46,6 +46,7 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            mkdir -p /home/ubuntu/ctrlu_backend
             echo "${{ secrets.ENV_PROD }}" > /home/ubuntu/ctrlu_backend/.env.prod
             cd /home/ubuntu/ctrlu_backend
             docker-compose -f docker-compose.prod.yml pull
