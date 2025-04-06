@@ -39,24 +39,6 @@ jobs:
           docker build -t foureach/ctrlu-backend:latest ./
           docker push foureach/ctrlu-backend:latest
 
-      - name: Copy docker-compose file to EC2
-        uses: appleboy/scp-action@v0.1.6
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
-          source: "./docker-compose.prod.yml"
-          target: "/home/ubuntu/ctrlu_backend/"
-
-      - name: Copy nginx.conf to EC2
-        uses: appleboy/scp-action@v0.1.6
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
-          source: "./nginx/nginx.conf"
-          target: "/home/ubuntu/ctrlu_backend/nginx/"
-
       - name: SSH and deploy to server
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -64,9 +46,16 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            mkdir -p /home/ubuntu/ctrlu_backend
+            if [ ! -d "/home/ubuntu/ctrlu_backend/.git" ]; then
+              git clone https://github.com/four-each/CtrlU_Backend.git /home/ubuntu/ctrlu_backend
+            else
+              cd /home/ubuntu/ctrlu_backend
+              git pull origin main
+            fi
+            
             echo "${{ secrets.ENV_PROD }}" > /home/ubuntu/ctrlu_backend/.env.prod
             export $(cat /home/ubuntu/ctrlu_backend/.env.prod | xargs)
+            
             cd /home/ubuntu/ctrlu_backend
             docker-compose -f docker-compose.prod.yml pull
             docker-compose -f docker-compose.prod.yml down
