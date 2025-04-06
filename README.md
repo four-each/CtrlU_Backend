@@ -59,3 +59,7 @@ Ctrl U 프로젝트 백엔드 레포지토리입니다!!
     docker stop spring-app
     docker rm spring-app
     ```
+   
+## 운영 환경
+### 아키텍처
+![img.png](prod-architecture.png)
