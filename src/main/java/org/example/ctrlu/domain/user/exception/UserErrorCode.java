@@ -12,6 +12,6 @@ public enum UserErrorCode implements ErrorCode {
 	; // UserErrorCode
 
 	private final int status;
-	private final String code;
+	private final int code;
 	private final String message;
 }

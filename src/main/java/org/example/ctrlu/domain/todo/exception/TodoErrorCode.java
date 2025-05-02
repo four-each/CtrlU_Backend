@@ -12,6 +12,6 @@ public enum TodoErrorCode implements ErrorCode {
 	; // TodoErrorCode
 
 	private final int status;
-	private final String code;
+	private final int code;
 	private final String message;
 }
