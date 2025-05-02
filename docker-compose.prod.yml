@@ -1,15 +1,6 @@
 version: '3.8'
 
 services:
-  redis:
-    image: redis:7
-    container_name: prod-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    networks:
-      - backend-net
-
   nginx:
     image: nginx:latest
     container_name: prod-nginx
