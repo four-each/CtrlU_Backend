@@ -1,26 +1,11 @@
 spring:
   profiles:
     group:
-      "test": "testDB, prodPort"
       "local": "localDB, prodPort"
       "prod": "prodDB, prodPort"
     active: "local"
   jackson:
     time-zone: Asia/Seoul
-
----
-spring:
-  config:
-    activate:
-      on-profile: "testDB"
-  datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  sql:
-    init:
-      mode: never
 
 ---
 
