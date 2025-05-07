@@ -32,9 +32,9 @@ public class User extends BaseEntity {
 
 	private String image;
 
-	private LocalDateTime deletedDate;
+	private LocalDateTime deletedAt;
 
 	public void delete() {
-		this.deletedDate = LocalDateTime.now();
+		this.deletedAt = LocalDateTime.now();
 	}
 }
