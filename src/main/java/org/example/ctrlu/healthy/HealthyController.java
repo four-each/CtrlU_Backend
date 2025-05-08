@@ -1,5 +1,7 @@
 package org.example.ctrlu.healthy;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import java.util.List;
 
 import org.example.ctrlu.global.s3.AwsS3Service;
@@ -18,6 +20,7 @@ public class HealthyController {
     private final AwsS3Service awsS3Service;
 
     private final HealthyRepository healthyRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @GetMapping("/api/healthy-check")
     public List<Healthy> healthyCheck() {
@@ -25,6 +28,15 @@ public class HealthyController {
         return healthyList;
     }
 
+    @GetMapping("/api/redis/healthy-check")
+    public String redisHealthyCheck() {
+        String key = "test:health";
+        String testValue = "redis-ok";
+
+        redisTemplate.opsForValue().set(key, testValue);
+        Object result = redisTemplate.opsForValue().get(key);
+
+        return "Redis Connected, Value: " + result;
     @PostMapping("/api/file")
     public String uploadFile(MultipartFile file) {
         return awsS3Service.uploadImage(file);
