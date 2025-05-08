@@ -23,11 +23,6 @@ services:
     restart: unless-stopped
     env_file:
       - .env.prod
-    environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-      PROD_DB_URL: ${PROD_DB_URL}
-      PROD_DB_USERNAME: ${PROD_DB_USERNAME}
-      PROD_DB_PASSWORD: ${PROD_DB_PASSWORD}
     networks:
       - backend-net
 
