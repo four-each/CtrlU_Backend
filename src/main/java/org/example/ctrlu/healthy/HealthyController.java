@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import lombok.RequiredArgsConstructor;
-
 @RestController
 @RequiredArgsConstructor
 public class HealthyController {
@@ -37,6 +35,8 @@ public class HealthyController {
         Object result = redisTemplate.opsForValue().get(key);
 
         return "Redis Connected, Value: " + result;
+    }
+
     @PostMapping("/api/file")
     public String uploadFile(MultipartFile file) {
         return awsS3Service.uploadImage(file);
