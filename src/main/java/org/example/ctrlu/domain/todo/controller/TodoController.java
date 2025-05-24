@@ -7,7 +7,6 @@ import org.example.ctrlu.domain.todo.dto.request.CreateTodoRequest;
 import org.example.ctrlu.domain.todo.dto.response.CreateTodoResponse;
 import org.example.ctrlu.domain.todo.dto.response.GetTodoResponse;
 import org.example.ctrlu.global.response.BaseResponse;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class TodoController {
     private final TodoService todoService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping
     public BaseResponse<CreateTodoResponse> createTodo(
             @RequestPart("request") @Valid CreateTodoRequest request,
             @RequestPart("startImage") MultipartFile startImage
