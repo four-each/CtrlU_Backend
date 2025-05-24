@@ -37,7 +37,7 @@ public class Todo extends BaseEntity {
 	@Column(nullable = false)
 	private LocalTime challengeTime;
 
-	private LocalTime durationTime;
+	private Integer durationTime;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
