@@ -18,11 +18,12 @@ public class TodoController {
 
     @PostMapping
     public BaseResponse<CreateTodoResponse> createTodo(
+            @RequestParam Long userId,
             @RequestPart("request") @Valid CreateTodoRequest request,
             @RequestPart("startImage") MultipartFile startImage
     ){
         //todo: 인증 구현 후 userId 받아오는 로직 구현 필요
-        CreateTodoResponse response = todoService.createTodo(1L, request, startImage);
+        CreateTodoResponse response = todoService.createTodo(userId, request, startImage);
         return new BaseResponse<>(response);
     }
 

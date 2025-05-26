@@ -1,14 +1,13 @@
 package org.example.ctrlu.healthy;
 
+import org.example.ctrlu.config.TestMySQLConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,11 +20,7 @@ class HealthyRepositoryTest {
     @Autowired
     private HealthyRepository healthyRepository;
 
-    @Container
-    static MySQLContainer mySQLContainer = new MySQLContainer("mysql:8")
-            .withDatabaseName("foureach_test")
-            .withUsername("root")
-            .withPassword("");
+    static final MySQLContainer<?> mySQLContainer = TestMySQLConfig.MYSQL_CONTAINER;
 
     @DynamicPropertySource
     public static void overrideProperties(DynamicPropertyRegistry registry) {
