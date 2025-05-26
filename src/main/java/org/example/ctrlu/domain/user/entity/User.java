@@ -1,6 +1,5 @@
 package org.example.ctrlu.domain.user.entity;
 
-import java.time.LocalDateTime;
 import org.example.ctrlu.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -50,8 +49,15 @@ public class User extends BaseEntity {
 		this.status = UserStatus.NONCERTIFIED;
 	}
 
-	public void updateToken(String newToken) {
-		this.verifyToken = newToken;
+	public void restore(String password, String nickname, String image, String verifyToken) {
+		this.password = password;
+		this.nickname = nickname;
+		this.image = image;
+		this.verifyToken = verifyToken;
+		this.status = UserStatus.NONCERTIFIED;
 	}
 
+	public void updateStatus(UserStatus status) {
+		this.status = status;
+	}
 }
