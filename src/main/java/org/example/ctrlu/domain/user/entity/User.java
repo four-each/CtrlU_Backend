@@ -1,16 +1,17 @@
 package org.example.ctrlu.domain.user.entity;
 
 import java.time.LocalDateTime;
-
-import lombok.Builder;
 import org.example.ctrlu.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -33,17 +34,24 @@ public class User extends BaseEntity {
 
 	private String image;
 
-	private LocalDateTime deletedAt;
+	private String verifyToken;
 
-	public void delete() {
-		this.deletedAt = LocalDateTime.now();
-	}
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private UserStatus status;
 
 	@Builder
-	public User(String email, String password, String nickname, String image) {
+	public User(String email, String password, String nickname, String image, String verifyToken) {
 		this.email = email;
 		this.password = password;
 		this.nickname = nickname;
 		this.image = image;
+		this.verifyToken = verifyToken;
+		this.status = UserStatus.NONCERTIFIED;
 	}
+
+	public void updateToken(String newToken) {
+		this.verifyToken = newToken;
+	}
+
 }
