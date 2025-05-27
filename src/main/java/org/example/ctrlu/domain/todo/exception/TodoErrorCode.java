@@ -9,8 +9,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum TodoErrorCode implements ErrorCode {
-	ALREADY_EXIST_PROCEEDING_TODO(HttpStatus.BAD_REQUEST.value(),4001,"이미 진행중인 할 일이 존재합니다."),
-	NOT_FOUND_TODO(HttpStatus.BAD_REQUEST.value(),4002,"존재하지 않는 할 일입니다.")
+	ALREADY_EXIST_PROCEEDING_TODO(HttpStatus.BAD_REQUEST.value(),"T001","이미 진행중인 할 일이 존재합니다."),
+	NOT_FOUND_TODO(HttpStatus.BAD_REQUEST.value(),"T002","존재하지 않는 할 일입니다.")
 	;
 
 	private final int status;
