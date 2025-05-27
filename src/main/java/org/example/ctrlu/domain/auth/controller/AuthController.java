@@ -2,6 +2,7 @@ package org.example.ctrlu.domain.auth.controller;
 
 import org.example.ctrlu.domain.auth.application.AuthService;
 import org.example.ctrlu.domain.auth.dto.request.SignupRequest;
+import org.example.ctrlu.global.response.BaseResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,11 +24,12 @@ public class AuthController {
 	private static final String ERROR_URL = "http://ctrlu.site/error";
 
 	@PostMapping("/signup")
-	public void signup(
+	public BaseResponse<Void> signup(
 		@RequestPart("request") @Valid SignupRequest request,
 		@RequestPart("userImage") MultipartFile userImage
 	) {
 		authService.signup(request, userImage);
+		return new BaseResponse<>(null);
 	}
 
 	@GetMapping("/verify")

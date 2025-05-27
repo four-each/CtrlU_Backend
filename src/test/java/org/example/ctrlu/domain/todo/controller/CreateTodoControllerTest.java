@@ -2,6 +2,7 @@ package org.example.ctrlu.domain.todo.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.ctrlu.config.TestMySQLConfig;
+import org.example.ctrlu.domain.auth.application.MailService;
 import org.example.ctrlu.domain.todo.dto.request.CreateTodoRequest;
 import org.example.ctrlu.domain.todo.repository.TodoRepository;
 import org.example.ctrlu.domain.user.entity.User;
@@ -54,6 +55,9 @@ class CreateTodoControllerTest {
 
     @MockitoBean
     private AwsS3Service awsS3Service;
+
+    @MockitoBean
+    private MailService mailService;
 
     //todo: Mock으로 하면 ConnectionFactory must not be null 오류가 남. 다른 이유를 모르겠음.
 //    @MockitoBean

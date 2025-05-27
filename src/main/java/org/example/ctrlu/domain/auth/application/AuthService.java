@@ -85,7 +85,7 @@ public class AuthService {
 		}
 
 		User user = userRepository.findByVerifyToken(verifyToken)
-			.orElseThrow(() -> new UserException(USER_NOT_FOUND));
+			.orElseThrow(() -> new UserException(NOT_FOUND_USER));
 
 		user.updateStatus(UserStatus.ACTIVE);
 		return true;
