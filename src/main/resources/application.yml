@@ -75,6 +75,10 @@ spring:
       hibernate:
         format_sql: true
         show_sql: true
+  data:
+    redis:
+      host: redis
+      port: 6379
   servlet:
     multipart:
       max-file-size: 10MB
