@@ -17,6 +17,18 @@ services:
     networks:
       - backend-net
 
+  redis:
+    image: redis:7
+    container_name: prod-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - backend-net
+
   backend:
     image: foureach/ctrlu-backend:latest
     container_name: prod-spring-app
@@ -43,6 +55,9 @@ services:
       - backend-net
     depends_on:
       - nginx
+
+volumes:
+  redis-data:
 
 networks:
   backend-net:
