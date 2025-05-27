@@ -2,6 +2,7 @@ package org.example.ctrlu.domain.user.entity;
 
 import java.time.LocalDateTime;
 
+import lombok.Builder;
 import org.example.ctrlu.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -36,5 +37,13 @@ public class User extends BaseEntity {
 
 	public void delete() {
 		this.deletedAt = LocalDateTime.now();
+	}
+
+	@Builder
+	public User(String email, String password, String nickname, String image) {
+		this.email = email;
+		this.password = password;
+		this.nickname = nickname;
+		this.image = image;
 	}
 }

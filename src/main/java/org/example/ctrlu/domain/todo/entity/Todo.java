@@ -2,6 +2,7 @@ package org.example.ctrlu.domain.todo.entity;
 
 import java.time.LocalTime;
 
+import lombok.Builder;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.global.entity.BaseEntity;
 
@@ -36,9 +37,19 @@ public class Todo extends BaseEntity {
 	@Column(nullable = false)
 	private LocalTime challengeTime;
 
-	private LocalTime durationTime;
+	private Integer durationTime;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
+
+	@Builder
+	public Todo(String title, String startImage, LocalTime challengeTime, User user) {
+		this.title = title;
+		this.startImage = startImage;
+		this.endImage = null;
+		this.challengeTime = challengeTime;
+		this.durationTime = null;
+		this.user = user;
+	}
 }
