@@ -12,4 +12,9 @@ public class BaseException extends RuntimeException {
 		super(exceptionStatus.getMessage());
 		this.exceptionStatus = exceptionStatus;
 	}
+
+	public BaseException(ErrorCode exceptionStatus, String customMessage) {
+		super(exceptionStatus.getMessage() + " (" + customMessage + ")");
+		this.exceptionStatus = exceptionStatus;
+	}
 }

@@ -3,6 +3,7 @@ package org.example.ctrlu.domain.todo.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.ctrlu.domain.todo.application.TodoService;
+import org.example.ctrlu.domain.todo.dto.request.CompleteTodoRequest;
 import org.example.ctrlu.domain.todo.dto.request.CreateTodoRequest;
 import org.example.ctrlu.domain.todo.dto.response.CreateTodoResponse;
 import org.example.ctrlu.domain.todo.dto.response.GetTodoResponse;
@@ -32,5 +33,24 @@ public class TodoController {
         //todo: 인증 구현 후 userId 받아오는 로직 구현 필요
         GetTodoResponse response = todoService.getTodo(1L, todoId);
         return new BaseResponse<>(response);
+    }
+
+    @PostMapping("/{todoId}/complete")
+    public BaseResponse<Void> completeTodo(
+            @RequestParam long userId,
+            @PathVariable long todoId,
+            @RequestPart("request") @Valid CompleteTodoRequest request,
+            @RequestPart("endImage") MultipartFile endImage
+    ){
+        //todo: 인증 구현 후 userId 받아오는 로직 구현 필요
+        todoService.completeTodo(userId, todoId, request, endImage);
+        return new BaseResponse<>(null);
+    }
+
+    @PostMapping("/{todoId}/giveUp")
+    public BaseResponse<Void> giveUpTodo(@RequestParam long userId, @PathVariable long todoId){
+        //todo: 인증 구현 후 userId 받아오는 로직 구현 필요
+        todoService.giveUpTodo(userId, todoId);
+        return new BaseResponse<>(null);
     }
 }
