@@ -11,10 +11,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 
 @Getter
-@JsonPropertyOrder({"code", "status", "message", "result"})
+@JsonPropertyOrder({"status", "code", "message", "result"})
 public class BaseResponse<T> implements ErrorCode {
-	private final int code;
 	private final int status;
+	private final String code;
 	private final String message;
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -22,24 +22,9 @@ public class BaseResponse<T> implements ErrorCode {
 
 	@JsonCreator
 	public BaseResponse(T result){
-		this.code = SUCCESS.getCode();
 		this.status = SUCCESS.getStatus();
+		this.code = SUCCESS.getCode();
 		this.message = SUCCESS.getMessage();
 		this.result = result;
-	}
-
-	@Override
-	public int getCode() {
-		return code;
-	}
-
-	@Override
-	public int getStatus() {
-		return status;
-	}
-
-	@Override
-	public String getMessage() {
-		return message;
 	}
 }

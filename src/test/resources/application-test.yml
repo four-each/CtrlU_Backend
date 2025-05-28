@@ -23,3 +23,6 @@ cloud:
       static: FAKE
     stack:
       auto: false
+
+jwt:
+  secret: FAKE

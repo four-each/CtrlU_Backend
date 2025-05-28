@@ -9,9 +9,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum UserErrorCode implements ErrorCode {
-	NOT_FOUND_USER(HttpStatus.BAD_REQUEST.value(),3001,"존재하지 않는 사용자입니다.");;
+	NOT_FOUND_USER(HttpStatus.BAD_REQUEST.value(),"U001","존재하지 않는 사용자입니다.");;
 
 	private final int status;
-	private final int code;
+	private final String code;
 	private final String message;
 }

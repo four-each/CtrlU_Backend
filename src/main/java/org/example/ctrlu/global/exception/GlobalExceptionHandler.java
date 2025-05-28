@@ -26,13 +26,13 @@ public class GlobalExceptionHandler {
 
 		return new BaseErrorResponse(new ErrorCode() {
 			@Override
-			public int getCode() {
-				return 2001;
+			public int getStatus() {
+				return HttpStatus.BAD_REQUEST.value();
 			}
 
 			@Override
-			public int getStatus() {
-				return HttpStatus.BAD_REQUEST.value();
+			public String getCode() {
+				return "B003";
 			}
 
 			@Override
