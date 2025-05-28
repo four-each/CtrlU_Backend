@@ -12,6 +12,6 @@ public enum FriendshipErrorCode implements ErrorCode {
 	; // FriendshipErrorCode
 
 	private final int status;
-	private final int code;
+	private final String code;
 	private final String message;
 }
