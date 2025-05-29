@@ -2,8 +2,6 @@ package org.example.ctrlu.global.response;
 
 import static org.example.ctrlu.global.response.BaseErrorCode.*;
 
-import org.springframework.web.bind.annotation.ResponseStatus;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

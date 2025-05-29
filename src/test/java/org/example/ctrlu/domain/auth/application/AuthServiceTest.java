@@ -32,6 +32,7 @@ class AuthServiceTest {
 	public static final String EXPIRED_TOKEN = "expired_token";
 	public static final String ENCODED_PASSWORD = "encoded_password";
 	public static final String IMAGE_URL = "http://s3.com/image.png";
+	private static final Long VERIFYTOKEN_EXPIRATION_TIME = 300000L;
 
 	@InjectMocks
 	private AuthService authService;
@@ -62,7 +63,7 @@ class AuthServiceTest {
 		when(userRepository.findByEmail(signupRequest.email())).thenReturn(Optional.empty());
 		when(awsS3Service.uploadImage(file)).thenReturn(IMAGE_URL);
 		when(passwordEncoder.encode(signupRequest.password())).thenReturn(ENCODED_PASSWORD);
-		when(jwtUtil.createVerifyToken()).thenReturn(VERIFY_TOKEN);
+		when(jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME)).thenReturn(VERIFY_TOKEN);
 
 		// when
 		authService.signup(signupRequest, file);
@@ -115,7 +116,7 @@ class AuthServiceTest {
 		when(jwtUtil.isExpired(EXPIRED_TOKEN)).thenReturn(true);
 		when(awsS3Service.uploadImage(file)).thenReturn(IMAGE_URL);
 		when(passwordEncoder.encode(signupRequest.password())).thenReturn(ENCODED_PASSWORD);
-		when(jwtUtil.createVerifyToken()).thenReturn(VERIFY_TOKEN);
+		when(jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME)).thenReturn(VERIFY_TOKEN);
 
 		// when
 		authService.signup(signupRequest, file);
@@ -139,7 +140,7 @@ class AuthServiceTest {
 		when(userRepository.findByEmail(signupRequest.email())).thenReturn(Optional.of(user));
 		when(awsS3Service.uploadImage(file)).thenReturn(IMAGE_URL);
 		when(passwordEncoder.encode(signupRequest.password())).thenReturn(ENCODED_PASSWORD);
-		when(jwtUtil.createVerifyToken()).thenReturn(VERIFY_TOKEN);
+		when(jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME)).thenReturn(VERIFY_TOKEN);
 
 		// when
 		authService.signup(signupRequest, file);

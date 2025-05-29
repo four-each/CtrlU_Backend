@@ -5,8 +5,11 @@ import static org.example.ctrlu.domain.user.exception.UserErrorCode.*;
 
 import java.util.Optional;
 
+import org.example.ctrlu.domain.auth.dto.request.SigninRequest;
 import org.example.ctrlu.domain.auth.dto.request.SignupRequest;
+import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
 import org.example.ctrlu.domain.auth.exception.AuthException;
+import org.example.ctrlu.domain.auth.repository.RedisTokenRepository;
 import org.example.ctrlu.domain.auth.util.JWTUtil;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.entity.UserStatus;
@@ -23,7 +26,12 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+	private static final Long ACCESSTOKEN_EXPIRATION_TIME = (60 * 1000L) * 30; // 30분
+	private static final Long REFRESHTOKEN_EXPIRATION_TIME = (60 * 1000L) * 60 * 24 * 7; // 7일
+	private static final Long VERIFYTOKEN_EXPIRATION_TIME = 300000L; // 5분
+
 	private final UserRepository userRepository;
+	private final RedisTokenRepository redisTokenRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final AwsS3Service awsS3Service;
 	private final MailService mailService;
@@ -58,7 +66,7 @@ public class AuthService {
 	private void restoreAndSendEmail(SignupRequest signupRequest, MultipartFile file, User user) {
 		String imageUrl = awsS3Service.uploadImage(file);
 		String encodedPassword = passwordEncoder.encode(signupRequest.password());
-		user.restore(encodedPassword, signupRequest.nickname(), imageUrl, jwtUtil.createVerifyToken());
+		user.restore(encodedPassword, signupRequest.nickname(), imageUrl, jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME));
 		mailService.sendEmail(user);
 	}
 
@@ -71,7 +79,7 @@ public class AuthService {
 			.password(encodedPassword)
 			.nickname(request.nickname())
 			.image(imageUrl)
-			.verifyToken(jwtUtil.createVerifyToken())
+			.verifyToken(jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME))
 			.build();
 
 		userRepository.save(newUser);
@@ -90,4 +98,24 @@ public class AuthService {
 		user.updateStatus(UserStatus.ACTIVE);
 		return true;
 	}
+
+	@Transactional
+	public TokenInfo signin(SigninRequest request) {
+		User user = userRepository.findByEmailAndStatus(request.email(), UserStatus.ACTIVE)
+			.orElseThrow(() -> new UserException(NOT_FOUND_USER));
+
+		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+			throw new AuthException(INVALID_PASSWORD);
+		}
+
+		return getTokenInfo(user);
+	}
+
+	private TokenInfo getTokenInfo(User user) {
+		String accessToken = jwtUtil.createAccessToken(user.getId(), ACCESSTOKEN_EXPIRATION_TIME);
+		String refreshToken = jwtUtil.createRefreshToken(REFRESHTOKEN_EXPIRATION_TIME);
+		redisTokenRepository.saveRefreshToken(refreshToken, user.getId(), REFRESHTOKEN_EXPIRATION_TIME);
+		return new TokenInfo(accessToken, refreshToken);
+	}
+
 }
