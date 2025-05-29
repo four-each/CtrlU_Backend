@@ -7,4 +7,8 @@ public class TodoException extends BaseException {
 	public TodoException(ErrorCode exceptionStatus) {
 		super(exceptionStatus);
 	}
+
+	public TodoException(ErrorCode exceptionStatus, String message) {
+		super(exceptionStatus, message);
+	}
 }

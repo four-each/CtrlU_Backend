@@ -18,4 +18,10 @@ public class BaseErrorResponse implements ErrorCode {
 		this.code = status.getCode();
 		this.message = status.getMessage();
 	}
+
+	public BaseErrorResponse(ErrorCode status, String message) {
+		this.status = status.getStatus();
+        this.code = status.getCode();
+		this.message = message;
+	}
 }
