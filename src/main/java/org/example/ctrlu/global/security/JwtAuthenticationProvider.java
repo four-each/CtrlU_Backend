@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationProvider implements AuthenticationProvider {
+	private static final String ROLE_USER = "ROLE_USER";
 	private final JWTUtil jwtUtil;
 	private final UserRepository userRepository;
 
@@ -28,7 +29,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
 		String token = (String) authentication.getCredentials();
 		log.info(token);
 		if (jwtUtil.isExpired(token)) {
-			throw new BadCredentialsException("유효하지 않은 토큰입니다.");
+			throw new BadCredentialsException("토큰이 만료되었습니다.");
 		}
 
 		Long userIdFromToken = jwtUtil.getUserIdFromToken(token);
@@ -37,9 +38,9 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
 		}
 
 		User user = userRepository.findByIdAndStatus(userIdFromToken, UserStatus.ACTIVE)
-			.orElseThrow(() -> new BadCredentialsException("존재하지 않는 사용자의 토큰입니다."));
+			.orElseThrow(() -> new BadCredentialsException("존재하지 않거나 비활성화된 사용자의 토큰입니다."));
 
-		List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+		List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(ROLE_USER));
 		return new JwtAuthenticationToken(user.getId(), authorities);
 	}
 

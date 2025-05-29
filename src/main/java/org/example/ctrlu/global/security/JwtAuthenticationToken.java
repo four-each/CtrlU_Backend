@@ -20,7 +20,7 @@ public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 	}
 
 	/**
-	 * (AuthenticationProvider에서 인증이 성공한 후 인증 객체를 반환할 때 사용됨.
+	 * 인증 후 (AuthenticationProvider에서 인증이 성공한 후 인증 객체를 반환할 때 사용됨.
 	 * 반환된 인증 객체는 Spring Security 컨텍스트에 저장됨.)
 	 * @param principal 인증된 사용자의 주체 (예: User ID)
 	 * @param authorities 사용자에게 부여된 권한 목록
