@@ -1,5 +1,6 @@
 package org.example.ctrlu.domain.todo.application;
 
+import org.example.ctrlu.domain.friendship.repository.FriendShipRepository;
 import org.example.ctrlu.domain.todo.dto.request.CompleteTodoRequest;
 import org.example.ctrlu.domain.todo.entity.Todo;
 import org.example.ctrlu.domain.todo.entity.TodoStatus;
@@ -41,6 +42,7 @@ public class ChangeTodoStatusServiceTest {
     private TodoRepository todoRepository;
     private UserRepository userRepository;
     private AwsS3Service awsS3Service;
+    private FriendShipRepository friendShipRepository;
 
     private final long userId = 1L;
     private final long todoId = 100L;
@@ -53,8 +55,11 @@ public class ChangeTodoStatusServiceTest {
         todoRepository = mock(TodoRepository.class);
         userRepository = mock(UserRepository.class);
         awsS3Service = mock(AwsS3Service.class);
-        Clock fixedClock = Clock.fixed(LocalDateTime.of(2025, 5, 28, 12, 0).atZone(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
-        todoService = new TodoService(todoRepository, userRepository, awsS3Service, fixedClock);
+        friendShipRepository = mock(FriendShipRepository.class);
+        Clock fixedClock = Clock.fixed(
+                LocalDateTime.of(2025, 5, 26, 10, 0).atZone(ZoneId.systemDefault()).toInstant(),
+                ZoneId.systemDefault());
+        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock);
 
         user = User.builder().nickname("닉네임").email("test@gmail.com").password("pass").build();
         todo = mock(Todo.class);

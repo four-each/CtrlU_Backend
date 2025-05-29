@@ -62,4 +62,8 @@ public class Todo extends BaseEntity {
 	public void giveUp(LocalDateTime now) {
 		this.status = TodoStatus.GIVEN_UP;
 	}
+
+	public void delete() {
+		this.status = TodoStatus.DELETED;
+	}
 }

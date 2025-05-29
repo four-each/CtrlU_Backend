@@ -1,5 +1,6 @@
 package org.example.ctrlu.domain.todo.application;
 
+import org.example.ctrlu.domain.friendship.repository.FriendShipRepository;
 import org.example.ctrlu.domain.todo.dto.request.CreateTodoRequest;
 import org.example.ctrlu.domain.todo.dto.response.CreateTodoResponse;
 import org.example.ctrlu.domain.todo.entity.Todo;
@@ -18,7 +19,9 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Clock;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +46,7 @@ public class CreateTodoServiceTest {
     private UserRepository userRepository;
     private AwsS3Service awsS3Service;
     private TodoService todoService;
+    private FriendShipRepository friendShipRepository;
 
     private final long userId = 1L;
     private final String title = "할 일 제목";
@@ -63,9 +67,11 @@ public class CreateTodoServiceTest {
         todoRepository = mock(TodoRepository.class);
         userRepository = mock(UserRepository.class);
         awsS3Service = mock(AwsS3Service.class);
-
-        Clock fixedClock = Clock.systemDefaultZone();
-        todoService = new TodoService(todoRepository, userRepository, awsS3Service, fixedClock);
+        friendShipRepository = mock(FriendShipRepository.class);
+        Clock fixedClock = Clock.fixed(
+                LocalDateTime.of(2025, 5, 26, 10, 0).atZone(ZoneId.systemDefault()).toInstant(),
+                ZoneId.systemDefault());
+        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock);
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(awsS3Service.uploadImage(startImage)).willReturn(uploadedImageUrl);

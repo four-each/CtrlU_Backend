@@ -1,5 +1,6 @@
 package org.example.ctrlu.domain.todo.application;
 
+import org.example.ctrlu.domain.friendship.repository.FriendShipRepository;
 import org.example.ctrlu.domain.todo.dto.response.GetTodoResponse;
 import org.example.ctrlu.domain.todo.entity.Todo;
 import org.example.ctrlu.domain.todo.entity.TodoStatus;
@@ -42,6 +43,7 @@ class GetTodoServiceTest {
     private UserRepository userRepository;
     private AwsS3Service awsS3Service;
     private TodoService todoService;
+    private FriendShipRepository friendShipRepository;
 
     public static final User user = User.builder()
             .nickname(USER_NICKNAME)
@@ -59,10 +61,11 @@ class GetTodoServiceTest {
         todoRepository = mock(TodoRepository.class);
         userRepository = mock(UserRepository.class);
         awsS3Service = mock(AwsS3Service.class);
+        friendShipRepository = mock(FriendShipRepository.class);
         Clock fixedClock = Clock.fixed(
                 LocalDateTime.of(2025, 5, 26, 10, 0).atZone(ZoneId.systemDefault()).toInstant(),
                 ZoneId.systemDefault());
-        todoService = new TodoService(todoRepository, userRepository, awsS3Service, fixedClock);
+        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock);
 
         todo = Todo.builder()
                 .title(TODO_TITLE)
@@ -76,34 +79,50 @@ class GetTodoServiceTest {
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
     }
 
-    @DisplayName("할 일 조회 성공")
     @Test
-    void getTodo_success() {
+    @DisplayName("진행 중(IN_PROGRESS) 할 일 조회 성공")
+    void getTodo_inProgress_success() {
         // given
+        ReflectionTestUtils.setField(todo, "status", TodoStatus.IN_PROGRESS);
+        ReflectionTestUtils.setField(todo, "createdAt", createdAt); // 09:00
         given(todoRepository.findById(todoId)).willReturn(Optional.of(todo));
 
         // when
         GetTodoResponse response = todoService.getTodo(userId, todoId);
 
         // then
-        assertThat(response.title()).isEqualTo(TODO_TITLE);
-        assertThat(response.isMine()).isTrue();
-        assertThat(response.durationTime()).isEqualTo(60 * 60 * 1000); // 1시간 = 3600000ms
+        assertThat(response.durationTime()).isEqualTo(60 * 60 * 1000);
     }
 
-    @DisplayName("할 일 조회 실패 - 포기한 할 일")
     @Test
-    void getTodo_fail_giveupTodo() {
+    @DisplayName("완료(COMPLETED) 할 일 조회 성공")
+    void getTodo_completed_success() {
         // given
-        ReflectionTestUtils.setField(todo, "status", TodoStatus.GIVEN_UP);
+        ReflectionTestUtils.setField(todo, "status", TodoStatus.COMPLETED);
+        ReflectionTestUtils.setField(todo, "durationTime", 4500000);
         given(todoRepository.findById(todoId)).willReturn(Optional.of(todo));
 
         // when
-        TodoException exception = assertThrows(TodoException.class, () -> todoService.getTodo(userId, todoId));
+        GetTodoResponse response = todoService.getTodo(userId, todoId);
 
         // then
-        assertThat(exception.getMessage()).startsWith(FAIL_TO_GET_TODO.getMessage());
-        assertThat(exception.getMessage()).contains(TodoStatus.GIVEN_UP.name());
+        assertThat(response.durationTime()).isEqualTo(4500000);
+    }
+
+    @Test
+    @DisplayName("포기(GIVEN_UP) 할 일 조회 성공")
+    void getTodo_givenUp_success() {
+        // given
+        ReflectionTestUtils.setField(todo, "status", TodoStatus.GIVEN_UP);
+        ReflectionTestUtils.setField(todo, "createdAt", createdAt);
+        ReflectionTestUtils.setField(todo, "modifiedAt", createdAt.plusMinutes(30));
+        given(todoRepository.findById(todoId)).willReturn(Optional.of(todo));
+
+        // when
+        GetTodoResponse response = todoService.getTodo(userId, todoId);
+
+        // then
+        assertThat(response.durationTime()).isEqualTo(30 * 60 * 1000);
     }
 
     @DisplayName("할 일 조회 실패 - 삭제한 할 일")
