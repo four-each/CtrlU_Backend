@@ -1,19 +1,14 @@
 package org.example.ctrlu.domain.todo.entity;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.global.entity.BaseEntity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,6 +38,10 @@ public class Todo extends BaseEntity {
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private TodoStatus status;
+
 	@Builder
 	public Todo(String title, String startImage, LocalTime challengeTime, User user) {
 		this.title = title;
@@ -51,5 +50,20 @@ public class Todo extends BaseEntity {
 		this.challengeTime = challengeTime;
 		this.durationTime = null;
 		this.user = user;
+		this.status = TodoStatus.IN_PROGRESS;
+	}
+
+	public void complete(int durationTime, String endImageUrl) {
+		this.durationTime = durationTime;
+		this.endImage = endImageUrl;
+		this.status = TodoStatus.COMPLETED;
+	}
+
+	public void giveUp() {
+		this.status = TodoStatus.GIVEN_UP;
+	}
+
+	public void delete() {
+		this.status = TodoStatus.DELETED;
 	}
 }

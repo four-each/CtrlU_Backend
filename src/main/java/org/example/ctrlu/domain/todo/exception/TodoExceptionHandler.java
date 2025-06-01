@@ -15,6 +15,6 @@ public class TodoExceptionHandler {
 	@ExceptionHandler({TodoException.class})
 	public BaseErrorResponse handleTodoException(TodoException e) {
 		log.error("[handleTodoException]", e);
-		return new BaseErrorResponse(e.getExceptionStatus());
+		return new BaseErrorResponse(e.getExceptionStatus(), e.getMessage());
 	}
 }
