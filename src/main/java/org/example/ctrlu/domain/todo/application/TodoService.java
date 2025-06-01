@@ -5,6 +5,7 @@ import org.example.ctrlu.domain.friendship.repository.FriendShipRepository;
 import org.example.ctrlu.domain.todo.dto.request.CompleteTodoRequest;
 import org.example.ctrlu.domain.todo.dto.request.CreateTodoRequest;
 import org.example.ctrlu.domain.todo.dto.response.CreateTodoResponse;
+import org.example.ctrlu.domain.todo.dto.response.GetRecentUploadFriendsResponse;
 import org.example.ctrlu.domain.todo.dto.response.GetTodoResponse;
 import org.example.ctrlu.domain.todo.dto.response.GetTodosResponse;
 import org.example.ctrlu.domain.todo.entity.Todo;
@@ -18,14 +19,18 @@ import org.example.ctrlu.domain.user.repository.UserRepository;
 import org.example.ctrlu.global.s3.AwsS3Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Clock;
-import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.example.ctrlu.domain.todo.exception.TodoErrorCode.*;
 import static org.example.ctrlu.domain.user.exception.UserErrorCode.*;
@@ -39,6 +44,7 @@ public class TodoService {
     private final AwsS3Service awsS3Service;
     private final FriendShipRepository friendShipRepository;
     private final Clock clock;
+    private final RedisTemplate<String,Object> redisTemplate;
 
     protected LocalDateTime now() {
         return LocalDateTime.now(clock);
@@ -125,5 +131,61 @@ public class TodoService {
         userRepository.findById(userId).orElseThrow(() -> new UserException(NOT_FOUND_USER));
         Page<Todo> todosPage = todoRepository.findAllByUserIdAndStatus(userId, status, pageable);
         return GetTodosResponse.from(todosPage, now());
+    }
+
+    public GetRecentUploadFriendsResponse getRecentUploadFriends(long userId, Pageable pageable) {
+        List<Long> friendIds = friendShipRepository.findAcceptedFriendIds(userId);
+        if (friendIds.isEmpty()) {
+            return new GetRecentUploadFriendsResponse(setMyData(userId), List.of(), 0, 0);
+        }
+
+        LocalDateTime since = LocalDateTime.now().minusHours(24);
+        List<Todo> latestTodos = todoRepository.findPagedLatestTodoPerFriend(
+                friendIds, since, pageable.getPageSize(), (int) pageable.getOffset()
+        );
+
+        int totalElements = todoRepository.countFriendsWithRecentTodos(friendIds, since);
+        int totalPages = (int) Math.ceil((double) totalElements / pageable.getPageSize());
+
+        List<GetRecentUploadFriendsResponse.Friend> responseFriends = setFriendsData(userId, latestTodos);
+        GetRecentUploadFriendsResponse.Me me = setMyData(userId);
+
+        return new GetRecentUploadFriendsResponse(me, responseFriends, totalPages, totalElements);
+    }
+
+    private List<GetRecentUploadFriendsResponse.Friend> setFriendsData(long userId, List<Todo> latestTodos) {
+        String redisKey = "story:seen:" + userId;
+        List<GetRecentUploadFriendsResponse.Friend> responseFriends = new ArrayList<>();
+
+        for (Todo todo : latestTodos) {
+            long friendId = todo.getUser().getId();
+            long latestTodoId = todo.getId();
+
+            String seenTodoIdStr = (String) redisTemplate.opsForHash().get(redisKey, String.valueOf(friendId));
+            long seenTodoId = seenTodoIdStr != null ? Long.parseLong(seenTodoIdStr) : -1;
+
+            GetRecentUploadFriendsResponse.Status status = seenTodoId < latestTodoId
+                    ? GetRecentUploadFriendsResponse.Status.GREEN
+                    : GetRecentUploadFriendsResponse.Status.GRAY;
+
+            String profileImage = userRepository.getImageById(friendId);
+
+            responseFriends.add(new GetRecentUploadFriendsResponse.Friend(
+                    friendId,
+                    profileImage,
+                    status
+            ));
+        }
+        return responseFriends;
+    }
+
+    private GetRecentUploadFriendsResponse.Me setMyData(long userId) {
+        String myProfileImage = userRepository.getImageById(userId);
+        GetRecentUploadFriendsResponse.Me me = new GetRecentUploadFriendsResponse.Me(
+                userId,
+                myProfileImage,
+                GetRecentUploadFriendsResponse.Status.GRAY
+        );
+        return me;
     }
 }
