@@ -119,7 +119,7 @@ public class ChangeTodoStatusServiceTest {
             todoService.giveUpTodo(userId, todoId);
 
             // then
-            verify(todo).giveUp(any(LocalDateTime.class));
+            verify(todo).giveUp();
         }
 
         @ParameterizedTest

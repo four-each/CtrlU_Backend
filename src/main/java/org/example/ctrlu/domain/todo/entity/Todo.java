@@ -59,7 +59,7 @@ public class Todo extends BaseEntity {
 		this.status = TodoStatus.COMPLETED;
 	}
 
-	public void giveUp(LocalDateTime now) {
+	public void giveUp() {
 		this.status = TodoStatus.GIVEN_UP;
 	}
 

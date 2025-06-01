@@ -93,7 +93,7 @@ public class TodoService {
         if(todo.getUser()!=user) throw new TodoException(NOT_YOUR_TODO);
         if(!todo.getStatus().equals(TodoStatus.IN_PROGRESS)) throw new TodoException(NOT_IN_PROGRESS_TODO, "상태: " +todo.getStatus().name());
 
-        todo.giveUp(now());
+        todo.giveUp();
     }
 
     public void deleteTodo(long userId, long todoId) {
@@ -122,7 +122,7 @@ public class TodoService {
 
     private GetTodosResponse getMyTodos(long userId, TodoStatus status, Pageable pageable) {
         if (status.equals(TodoStatus.DELETED)) throw new TodoException(FAIL_TO_GET_TODO, TodoStatus.DELETED.name());
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserException(NOT_FOUND_USER));
+        userRepository.findById(userId).orElseThrow(() -> new UserException(NOT_FOUND_USER));
         Page<Todo> todosPage = todoRepository.findAllByUserIdAndStatus(userId, status, pageable);
         return GetTodosResponse.from(todosPage, now());
     }
