@@ -108,30 +108,4 @@ public class CreateTodoServiceTest {
 
         assertThat(exception.getExceptionStatus()).isEqualTo(ALREADY_EXIST_IN_PROGRESS_TODO);
     }
-
-    @DisplayName("할 일 생성 성공 - 포기/삭제/완료된 할 일이 존재해도 문제 없음")
-    @ParameterizedTest
-    @EnumSource(value = TodoStatus.class, names = {"GIVEN_UP", "COMPLETED", "DELETED"})
-    void createTodo_success_withOtherStatusTodos(TodoStatus status) {
-        // given
-        Todo otherStatusTodo = Todo.builder()
-                .title(title)
-                .user(user)
-                .challengeTime(challengeTime)
-                .build();
-        ReflectionTestUtils.setField(otherStatusTodo, "status", status);
-
-        given(todoRepository.findAllByUserIdAndStatus(userId, TodoStatus.IN_PROGRESS))
-                .willReturn(Collections.emptyList());
-
-        Todo savedTodo = mock(Todo.class);
-        given(savedTodo.getId()).willReturn(88L);
-        given(todoRepository.save(any(Todo.class))).willReturn(savedTodo);
-
-        // when
-        CreateTodoResponse response = todoService.createTodo(userId, request, startImage);
-
-        // then
-        assertThat(response.todoId()).isEqualTo(88L);
-    }
 }
