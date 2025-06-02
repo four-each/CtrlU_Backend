@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.web.util.WebUtils;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +32,10 @@ public class AuthController {
 	private static final String LOGIN_URL = "http://ctrlu.site/login";
 	private static final String ERROR_URL = "http://ctrlu.site/error";
 	private static final String COOKIE_REFRESHTOKEN = "refreshToken=";
+	private static final String COOKIE_NAME_REFRESHTOKEN = "refreshToken";
 	private static final String COOKIE_FLAGS = "; Path=/; HttpOnly; Secure; ";
 	private static final String COOKIE_MAXAGE = "Max-Age=";
-	private static final Long REFRESHTOKEN_EXPIRATION_TIME = (60 * 1000L) * 60 * 24 * 7; // 7일
+	private static final Long REFRESHTOKEN_EXPIRATION_TIME = 60 * 60 * 24 * 7L; // 7일
 	private static final String COOKIE_SAMESITE = "; SameSite=None";
 
 	@PostMapping("/signup")
@@ -57,6 +61,20 @@ public class AuthController {
 	@PostMapping("/signin")
 	public BaseResponse<SigninResponse> signin(@Valid @RequestBody SigninRequest request, HttpServletResponse response) {
 		TokenInfo tokenInfo = authService.signin(request);
+		response.setHeader(HttpHeaders.SET_COOKIE,
+			COOKIE_REFRESHTOKEN
+				+ tokenInfo.refreshToken()
+				+ COOKIE_FLAGS
+				+ COOKIE_MAXAGE
+				+ REFRESHTOKEN_EXPIRATION_TIME
+				+ COOKIE_SAMESITE);
+		return new BaseResponse<>(new SigninResponse(tokenInfo.accessToken()));
+	}
+
+	@PostMapping("/reissue")
+	public BaseResponse<SigninResponse> reissue(HttpServletRequest request, HttpServletResponse response) {
+		Cookie cookie = WebUtils.getCookie(request, COOKIE_NAME_REFRESHTOKEN);
+		TokenInfo tokenInfo = authService.reissue(cookie);
 		response.setHeader(HttpHeaders.SET_COOKIE,
 			COOKIE_REFRESHTOKEN
 				+ tokenInfo.refreshToken()

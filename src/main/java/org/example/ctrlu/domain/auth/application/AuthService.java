@@ -1,8 +1,8 @@
 package org.example.ctrlu.domain.auth.application;
 
 import static org.example.ctrlu.domain.auth.exception.AuthErrorCode.*;
-import static org.example.ctrlu.domain.user.exception.UserErrorCode.*;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.example.ctrlu.domain.auth.dto.request.SigninRequest;
@@ -13,7 +13,6 @@ import org.example.ctrlu.domain.auth.repository.RedisTokenRepository;
 import org.example.ctrlu.domain.auth.util.JWTUtil;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.entity.UserStatus;
-import org.example.ctrlu.domain.user.exception.UserException;
 import org.example.ctrlu.domain.user.repository.UserRepository;
 import org.example.ctrlu.global.s3.AwsS3Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -93,7 +93,7 @@ public class AuthService {
 		}
 
 		User user = userRepository.findByVerifyToken(verifyToken)
-			.orElseThrow(() -> new UserException(NOT_FOUND_USER));
+			.orElseThrow(() -> new AuthException(NOT_FOUND_USER));
 
 		user.updateStatus(UserStatus.ACTIVE);
 		return true;
@@ -102,7 +102,7 @@ public class AuthService {
 	@Transactional
 	public TokenInfo signin(SigninRequest request) {
 		User user = userRepository.findByEmailAndStatus(request.email(), UserStatus.ACTIVE)
-			.orElseThrow(() -> new UserException(NOT_FOUND_USER));
+			.orElseThrow(() -> new AuthException(NOT_FOUND_USER));
 
 		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
 			throw new AuthException(INVALID_PASSWORD);
@@ -111,11 +111,32 @@ public class AuthService {
 		return getTokenInfo(user);
 	}
 
+	@Transactional
+	public TokenInfo reissue(Cookie cookie) {
+		String refreshToken = Objects.requireNonNull(cookie).getValue();
+		validateRefreshToken(refreshToken);
+		Long userId = getUserIdFromRefreshToken(refreshToken);
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new AuthException(NOT_FOUND_USER));
+		return getTokenInfo(user);
+	}
+
+	private void validateRefreshToken(String refreshToken) {
+		if (jwtUtil.isExpired(refreshToken)) {
+			throw new AuthException(EXPIRED_REFRESHTOKEN);
+		}
+	}
+
+	private Long getUserIdFromRefreshToken(String refreshToken) {
+		Long userId = redisTokenRepository.getValue(refreshToken);
+		redisTokenRepository.deleteRefreshToken(refreshToken);
+		return userId;
+	}
+
 	private TokenInfo getTokenInfo(User user) {
 		String accessToken = jwtUtil.createAccessToken(user.getId(), ACCESSTOKEN_EXPIRATION_TIME);
 		String refreshToken = jwtUtil.createRefreshToken(REFRESHTOKEN_EXPIRATION_TIME);
 		redisTokenRepository.saveRefreshToken(refreshToken, user.getId(), REFRESHTOKEN_EXPIRATION_TIME);
 		return new TokenInfo(accessToken, refreshToken);
 	}
-
 }
