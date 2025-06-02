@@ -37,4 +37,6 @@ public interface TodoRepository extends JpaRepository<Todo,Long> {
     int countFriendsWithRecentTodos(
             @Param("friendIds") List<Long> friendIds,
             @Param("since") LocalDateTime since);
+
+    List<Todo> findByUserIdAndCreatedAtAfter(Long userId, LocalDateTime createdAtAfter);
 }

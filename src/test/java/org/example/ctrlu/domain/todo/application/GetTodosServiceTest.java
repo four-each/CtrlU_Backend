@@ -18,6 +18,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Clock;
@@ -52,6 +53,7 @@ public class GetTodosServiceTest {
     private AwsS3Service awsS3Service;
     private FriendShipRepository friendShipRepository;
     private TodoService todoService;
+    private RedisTemplate<String, Object> redisTemplate;
 
     private final long userId = 1L;
     private final User user = User.builder()
@@ -66,9 +68,10 @@ public class GetTodosServiceTest {
         userRepository = mock(UserRepository.class);
         awsS3Service = mock(AwsS3Service.class);
         friendShipRepository = mock(FriendShipRepository.class);
+        redisTemplate = mock(RedisTemplate.class);
 
         Clock fixedClock = Clock.fixed(LocalDateTime.of(2025, 5, 26, 10, 0).atZone(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
-        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock);
+        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock, redisTemplate);
 
         ReflectionTestUtils.setField(user, "id", userId);
         given(userRepository.findById(userId)).willReturn(Optional.of(user));

@@ -22,6 +22,6 @@ public record GetRecentUploadFriendsResponse(
     ) {}
 
     public enum Status {
-        GRAY, GREEN
+        GRAY, NONE, GREEN
     }
 }

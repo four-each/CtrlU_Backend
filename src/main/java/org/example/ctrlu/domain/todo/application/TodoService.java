@@ -136,7 +136,7 @@ public class TodoService {
     public GetRecentUploadFriendsResponse getRecentUploadFriends(long userId, Pageable pageable) {
         List<Long> friendIds = friendShipRepository.findAcceptedFriendIds(userId);
         if (friendIds.isEmpty()) {
-            return new GetRecentUploadFriendsResponse(setMyData(userId), List.of(), 0, 0);
+            return new GetRecentUploadFriendsResponse(setMyData(userId, now()), List.of(), 0, 0);
         }
 
         LocalDateTime since = LocalDateTime.now().minusHours(24);
@@ -148,7 +148,7 @@ public class TodoService {
         int totalPages = (int) Math.ceil((double) totalElements / pageable.getPageSize());
 
         List<GetRecentUploadFriendsResponse.Friend> responseFriends = setFriendsData(userId, latestTodos);
-        GetRecentUploadFriendsResponse.Me me = setMyData(userId);
+        GetRecentUploadFriendsResponse.Me me = setMyData(userId, now());
 
         return new GetRecentUploadFriendsResponse(me, responseFriends, totalPages, totalElements);
     }
@@ -179,12 +179,20 @@ public class TodoService {
         return responseFriends;
     }
 
-    private GetRecentUploadFriendsResponse.Me setMyData(long userId) {
+    private GetRecentUploadFriendsResponse.Me setMyData(long userId, LocalDateTime now) {
         String myProfileImage = userRepository.getImageById(userId);
+        GetRecentUploadFriendsResponse.Status status;
+        List<Todo> todosWithin24 = todoRepository.findByUserIdAndCreatedAtAfter(userId, now.minusHours(24));
+        if(!todosWithin24.isEmpty()) {
+           status = GetRecentUploadFriendsResponse.Status.GRAY;
+        } else{
+            status = GetRecentUploadFriendsResponse.Status.NONE;
+        }
+
         GetRecentUploadFriendsResponse.Me me = new GetRecentUploadFriendsResponse.Me(
                 userId,
                 myProfileImage,
-                GetRecentUploadFriendsResponse.Status.GRAY
+                status
         );
         return me;
     }

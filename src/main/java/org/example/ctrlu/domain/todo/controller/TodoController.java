@@ -78,7 +78,7 @@ public class TodoController {
         return new BaseResponse<>(response);
     }
 
-    @GetMapping
+    @GetMapping("/within-24hours")
     public BaseResponse<GetRecentUploadFriendsResponse> getRecentUploadFriends(@RequestParam long userId,
                                                                                @PageableDefault(size = 10, page= 0) Pageable pageable){
         //todo: 인증 구현 후 userId 받아오는 로직 구현 필요

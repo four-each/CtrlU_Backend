@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.time.Clock;
@@ -43,6 +44,7 @@ public class ChangeTodoStatusServiceTest {
     private UserRepository userRepository;
     private AwsS3Service awsS3Service;
     private FriendShipRepository friendShipRepository;
+    private RedisTemplate<String, Object> redisTemplate;
 
     private final long userId = 1L;
     private final long todoId = 100L;
@@ -56,10 +58,12 @@ public class ChangeTodoStatusServiceTest {
         userRepository = mock(UserRepository.class);
         awsS3Service = mock(AwsS3Service.class);
         friendShipRepository = mock(FriendShipRepository.class);
+        redisTemplate = mock(RedisTemplate.class);
+
         Clock fixedClock = Clock.fixed(
                 LocalDateTime.of(2025, 5, 26, 10, 0).atZone(ZoneId.systemDefault()).toInstant(),
                 ZoneId.systemDefault());
-        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock);
+        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock, redisTemplate);
 
         user = User.builder().nickname("닉네임").email("test@gmail.com").password("pass").build();
         todo = mock(Todo.class);
