@@ -129,18 +129,4 @@ class GetTodoServiceTest {
         assertThat(response.durationTime()).isEqualTo(30 * 60 * 1000);
     }
 
-    @DisplayName("할 일 조회 실패 - 삭제한 할 일")
-    @Test
-    void getTodo_fail_deletedTodo() {
-        // given
-        ReflectionTestUtils.setField(todo, "status", TodoStatus.DELETED);
-        given(todoRepository.findById(todoId)).willReturn(Optional.of(todo));
-
-        // when
-        TodoException exception = assertThrows(TodoException.class, () -> todoService.getTodo(userId, todoId));
-
-        // then
-        assertThat(exception.getMessage()).startsWith(FAIL_TO_GET_TODO.getMessage());
-        assertThat(exception.getMessage()).contains(TodoStatus.DELETED.name());
-    }
 }

@@ -20,8 +20,14 @@ public interface TodoRepository extends JpaRepository<Todo,Long> {
     SELECT *
     FROM (
         SELECT t.*, ROW_NUMBER() OVER (PARTITION BY t.user_id ORDER BY t.created_at DESC) AS rn
-        FROM todo t WHERE t.user_id IN (:friendIds) AND t.created_at >= :since) ranked
-    WHERE ranked.rn = 1 ORDER BY ranked.created_at DESC LIMIT :limit OFFSET :offset
+        FROM todo t 
+        WHERE t.user_id IN (:friendIds) 
+          AND t.created_at >= :since 
+          AND t.status <> 'GIVEN_UP'
+    ) ranked
+    WHERE ranked.rn = 1 
+    ORDER BY ranked.created_at DESC 
+    LIMIT :limit OFFSET :offset
     """, nativeQuery = true)
     List<Todo> findPagedLatestTodoPerFriend(
             @Param("friendIds") List<Long> friendIds,
@@ -30,13 +36,21 @@ public interface TodoRepository extends JpaRepository<Todo,Long> {
             @Param("offset") int offset);
 
 
+
     @Query(value = """
     SELECT COUNT(*) FROM (
-        SELECT user_id FROM todo WHERE user_id IN (:friendIds) AND created_at >= :since GROUP BY user_id) AS grouped
+        SELECT user_id 
+        FROM todo 
+        WHERE user_id IN (:friendIds) 
+          AND created_at >= :since 
+          AND status <> 'GIVEN_UP'
+        GROUP BY user_id
+    ) AS grouped
     """, nativeQuery = true)
     int countFriendsWithRecentTodos(
             @Param("friendIds") List<Long> friendIds,
             @Param("since") LocalDateTime since);
 
-    List<Todo> findByUserIdAndCreatedAtAfter(Long userId, LocalDateTime createdAtAfter);
+
+    List<Todo> findByUserIdAndCreatedAtAfterAndStatusNot(Long userId, LocalDateTime createdAtAfter, TodoStatus status);
 }

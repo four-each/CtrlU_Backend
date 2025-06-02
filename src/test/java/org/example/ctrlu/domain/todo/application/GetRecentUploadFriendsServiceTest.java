@@ -48,6 +48,7 @@ public class GetRecentUploadFriendsServiceTest {
      * - 24시간 내에 올린 친구가 있고, Redis에 본 이력이 있고, 새로 올린 경우 GREEN으로 응답 성공
      * - 24시간 내에 올린 친구가 있고, Redis에 본 이력이 있고, 그게 가장 최근인 경우 GRAY로 응답 성공
      * - createdAt 내림차순으로 정렬 성공
+     * - 포기한 할 일은 조회에서 제외
      */
 
     @Autowired private TodoService todoService;
@@ -260,6 +261,34 @@ public class GetRecentUploadFriendsServiceTest {
         assertThat(response.friends().get(1).id()).isEqualTo(friend.getId());
         assertThat(response.totalElementCount()).isEqualTo(2);
         assertThat(response.totalPageCount()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("포기한 할 일은 조회되지 않음")
+    void getRecentUploadFriends_excludeGivenUpTodo() {
+        // given
+        Friendship friendShip = Friendship.builder().fromUser(me).toUser(friend).build();
+        friendShip.accept();
+        friendShipRepository.save(friendShip);
+
+        // 포기한 할 일 등록
+        Todo givenUpTodo = Todo.builder()
+                .user(friend)
+                .title(TODO_TITLE)
+                .challengeTime(TODO_CHALLENGE_TIME)
+                .startImage(TEST_IMAGE)
+                .build();
+        ReflectionTestUtils.setField(givenUpTodo, "createdAt", LocalDateTime.now().minusHours(1));
+        givenUpTodo.giveUp();
+        todoRepository.save(givenUpTodo);
+
+        // when
+        GetRecentUploadFriendsResponse response = todoService.getRecentUploadFriends(me.getId(), PageRequest.of(0, 10));
+
+        // then
+        assertThat(response.friends()).isEmpty();
+        assertThat(response.totalElementCount()).isZero();
+        assertThat(response.totalPageCount()).isZero();
     }
 
 }

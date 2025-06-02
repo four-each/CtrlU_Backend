@@ -68,9 +68,6 @@ public class TodoService {
                 .orElseThrow(() -> new UserException(NOT_FOUND_USER));
         Todo todo = todoRepository.findById(todoId)
                 .orElseThrow(() -> new TodoException(NOT_FOUND_TODO));
-        TodoStatus status = todo.getStatus();
-        if (status.equals(TodoStatus.DELETED))
-            throw new TodoException(FAIL_TO_GET_TODO, "상태: " + status.name());
 
         int durationTime = DurationTimeCalculator.calculate(todo, now());
         boolean isMine = getIsMine(todo,user);
@@ -106,8 +103,7 @@ public class TodoService {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(NOT_FOUND_USER));
         Todo todo = todoRepository.findById(todoId).orElseThrow(() -> new TodoException(NOT_FOUND_TODO));
         if(todo.getUser()!=user) throw new TodoException(NOT_YOUR_TODO);
-        if(todo.getStatus().equals(TodoStatus.DELETED)) throw new TodoException(NOT_FOUND_TODO);
-        todo.delete();
+        todoRepository.delete(todo);
     }
 
     public GetTodosResponse getTodos(long userId, String target, TodoStatus status, Pageable pageable) {
@@ -127,7 +123,6 @@ public class TodoService {
     }
 
     private GetTodosResponse getMyTodos(long userId, TodoStatus status, Pageable pageable) {
-        if (status.equals(TodoStatus.DELETED)) throw new TodoException(FAIL_TO_GET_TODO, TodoStatus.DELETED.name());
         userRepository.findById(userId).orElseThrow(() -> new UserException(NOT_FOUND_USER));
         Page<Todo> todosPage = todoRepository.findAllByUserIdAndStatus(userId, status, pageable);
         return GetTodosResponse.from(todosPage, now());
@@ -182,7 +177,7 @@ public class TodoService {
     private GetRecentUploadFriendsResponse.Me setMyData(long userId, LocalDateTime now) {
         String myProfileImage = userRepository.getImageById(userId);
         GetRecentUploadFriendsResponse.Status status;
-        List<Todo> todosWithin24 = todoRepository.findByUserIdAndCreatedAtAfter(userId, now.minusHours(24));
+        List<Todo> todosWithin24 = todoRepository.findByUserIdAndCreatedAtAfterAndStatusNot(userId, now.minusHours(24), TodoStatus.GIVEN_UP);
         if(!todosWithin24.isEmpty()) {
            status = GetRecentUploadFriendsResponse.Status.GRAY;
         } else{

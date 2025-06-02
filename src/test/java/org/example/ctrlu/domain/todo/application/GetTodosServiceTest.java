@@ -97,19 +97,6 @@ public class GetTodosServiceTest {
     }
 
     @Test
-    @DisplayName("내 할 일 조회 실패 - 삭제 상태 요청")
-    void getMyTodos_fail_deletedStatus() {
-        // when
-        TodoException exception = assertThrows(TodoException.class, () ->
-                todoService.getTodos(userId, "me", TodoStatus.DELETED, PageRequest.of(0, 10))
-        );
-
-        // then
-        assertThat(exception.getMessage()).startsWith(FAIL_TO_GET_TODO.getMessage());
-        assertThat(exception.getMessage()).contains(TodoStatus.DELETED.name());
-    }
-
-    @Test
     @DisplayName("친구의 할 일 조회 성공 - createdAt 오름차순")
     void getFriendTodos_success_sortedByCreatedAt() {
         // given

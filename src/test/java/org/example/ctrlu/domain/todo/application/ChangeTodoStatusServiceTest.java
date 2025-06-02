@@ -36,7 +36,7 @@ public class ChangeTodoStatusServiceTest {
     /**
      * 할 일 완료(포기) 테스트 시나리오
      * - 진행 중인 할 일 성공
-     * - 이미 완료/포기/삭제한 할 일 실패
+     * - 이미 완료/포기한 할 일 실패
      */
 
     private TodoService todoService;
@@ -93,8 +93,8 @@ public class ChangeTodoStatusServiceTest {
         }
 
         @ParameterizedTest
-        @EnumSource(value = TodoStatus.class, names = {"COMPLETED", "GIVEN_UP", "DELETED"})
-        @DisplayName("이미 완료/포기/삭제된 할 일 완료 시 실패")
+        @EnumSource(value = TodoStatus.class, names = {"COMPLETED", "GIVEN_UP"})
+        @DisplayName("이미 완료/포기된 할 일 완료 시 실패")
         void complete_invalidStatus_fail(TodoStatus status) {
             // given
             given(todo.getStatus()).willReturn(status);
@@ -127,8 +127,8 @@ public class ChangeTodoStatusServiceTest {
         }
 
         @ParameterizedTest
-        @EnumSource(value = TodoStatus.class, names = {"COMPLETED", "GIVEN_UP", "DELETED"})
-        @DisplayName("이미 완료/포기/삭제된 할 일 포기 시 실패")
+        @EnumSource(value = TodoStatus.class, names = {"COMPLETED", "GIVEN_UP"})
+        @DisplayName("이미 완료/포기된 할 일 포기 시 실패")
         void giveUp_invalidStatus_fail(TodoStatus status) {
             // given
             given(todo.getStatus()).willReturn(status);
