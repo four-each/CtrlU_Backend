@@ -15,7 +15,6 @@ import io.jsonwebtoken.Jwts;
 @Component
 public class JWTUtil {
 	private SecretKey secretKey;
-	private static final Long VERIFYTOKEN_EXPIRATION = 300000L; // 5분
 
 	public JWTUtil(@Value("${jwt.secret}") String secret) {
 		secretKey = new SecretKeySpec(
@@ -24,10 +23,10 @@ public class JWTUtil {
 					);
 	}
 
-	public String createVerifyToken() {
+	public String createVerifyToken(Long expirationTime) {
 		return Jwts.builder()
 			.issuedAt(new Date(System.currentTimeMillis()))
-			.expiration(new Date(System.currentTimeMillis() + VERIFYTOKEN_EXPIRATION))
+			.expiration(new Date(System.currentTimeMillis() + expirationTime))
 			.signWith(secretKey)
 			.compact();
 	}
@@ -47,4 +46,33 @@ public class JWTUtil {
 			return true;
 		}
 	}
+
+	public String createAccessToken(Long userId, Long expirationTime) {
+		return Jwts.builder()
+			.subject(String.valueOf(userId))
+			.issuedAt(new Date(System.currentTimeMillis()))
+			.expiration(new Date(System.currentTimeMillis() + expirationTime))
+			.signWith(secretKey)
+			.compact();
+	}
+
+	public String createRefreshToken(Long expirationTime) {
+		return Jwts.builder()
+			.issuedAt(new Date(System.currentTimeMillis()))
+			.expiration(new Date(System.currentTimeMillis() + expirationTime))
+			.signWith(secretKey)
+			.compact();
+	}
+
+	public Long getUserIdFromToken(String token) {
+		String userId = Jwts.parser()
+			.verifyWith(secretKey)
+			.build()
+			.parseSignedClaims(token)
+			.getPayload()
+			.getSubject();
+
+		return Long.parseLong(userId);
+	}
+
 }
