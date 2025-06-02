@@ -1,18 +1,17 @@
 package org.example.ctrlu.domain.auth.application;
 
 import static org.example.ctrlu.domain.auth.exception.AuthErrorCode.*;
-import static org.example.ctrlu.domain.user.exception.UserErrorCode.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
+import org.example.ctrlu.domain.auth.dto.request.SigninRequest;
 import org.example.ctrlu.domain.auth.dto.request.SignupRequest;
 import org.example.ctrlu.domain.auth.exception.AuthException;
 import org.example.ctrlu.domain.auth.util.JWTUtil;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.entity.UserStatus;
-import org.example.ctrlu.domain.user.exception.UserException;
 import org.example.ctrlu.domain.user.repository.UserRepository;
 import org.example.ctrlu.global.s3.AwsS3Service;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,12 +25,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.Cookie;
+
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 	public static final String VERIFY_TOKEN = "verify_token";
 	public static final String EXPIRED_TOKEN = "expired_token";
 	public static final String ENCODED_PASSWORD = "encoded_password";
 	public static final String IMAGE_URL = "http://s3.com/image.png";
+	private static final Long VERIFYTOKEN_EXPIRATION_TIME = 300000L;
 
 	@InjectMocks
 	private AuthService authService;
@@ -49,10 +51,12 @@ class AuthServiceTest {
 	private MultipartFile file;
 
 	private SignupRequest signupRequest;
+	private SigninRequest signinRequest;
 
 	@BeforeEach
 	void setUp() {
 		signupRequest = new SignupRequest("email@gmail.com", "password", "nickname");
+		signinRequest = new SigninRequest("test@email.com", "password123");
 	}
 
 	@Test
@@ -62,7 +66,7 @@ class AuthServiceTest {
 		when(userRepository.findByEmail(signupRequest.email())).thenReturn(Optional.empty());
 		when(awsS3Service.uploadImage(file)).thenReturn(IMAGE_URL);
 		when(passwordEncoder.encode(signupRequest.password())).thenReturn(ENCODED_PASSWORD);
-		when(jwtUtil.createVerifyToken()).thenReturn(VERIFY_TOKEN);
+		when(jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME)).thenReturn(VERIFY_TOKEN);
 
 		// when
 		authService.signup(signupRequest, file);
@@ -115,7 +119,7 @@ class AuthServiceTest {
 		when(jwtUtil.isExpired(EXPIRED_TOKEN)).thenReturn(true);
 		when(awsS3Service.uploadImage(file)).thenReturn(IMAGE_URL);
 		when(passwordEncoder.encode(signupRequest.password())).thenReturn(ENCODED_PASSWORD);
-		when(jwtUtil.createVerifyToken()).thenReturn(VERIFY_TOKEN);
+		when(jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME)).thenReturn(VERIFY_TOKEN);
 
 		// when
 		authService.signup(signupRequest, file);
@@ -139,7 +143,7 @@ class AuthServiceTest {
 		when(userRepository.findByEmail(signupRequest.email())).thenReturn(Optional.of(user));
 		when(awsS3Service.uploadImage(file)).thenReturn(IMAGE_URL);
 		when(passwordEncoder.encode(signupRequest.password())).thenReturn(ENCODED_PASSWORD);
-		when(jwtUtil.createVerifyToken()).thenReturn(VERIFY_TOKEN);
+		when(jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME)).thenReturn(VERIFY_TOKEN);
 
 		// when
 		authService.signup(signupRequest, file);
@@ -190,8 +194,35 @@ class AuthServiceTest {
 		when(userRepository.findByVerifyToken(VERIFY_TOKEN)).thenReturn(Optional.empty());
 
 		// when / then
-		UserException userException =
-			assertThrows(UserException.class, () -> authService.verifyEmail(VERIFY_TOKEN));
-		assertEquals(NOT_FOUND_USER, userException.getExceptionStatus());
+		AuthException authException =
+			assertThrows(AuthException.class, () -> authService.verifyEmail(VERIFY_TOKEN));
+		assertEquals(NOT_FOUND_USER, authException.getExceptionStatus());
+	}
+
+	@Test
+	@DisplayName("로그인 시 비밀번호가 틀리면 예외가 발생한다.")
+	void signin_invalid_password_throwsException() {
+		User user = User.builder()
+			.password(ENCODED_PASSWORD)
+			.build();
+
+		when(userRepository.findByEmailAndStatus(signinRequest.email(), UserStatus.ACTIVE)).thenReturn(Optional.of(user));
+		when(passwordEncoder.matches(signinRequest.password(), user.getPassword())).thenReturn(false);
+
+		AuthException authException
+			= assertThrows(AuthException.class, () -> authService.signin(signinRequest));
+		assertEquals(INVALID_PASSWORD, authException.getExceptionStatus());
+	}
+
+	@Test
+	@DisplayName("리프레시 토큰 재발급 시 기존 리프레시 토큰이 만료되었을 경우 예외가 발생한다.")
+	void reissue_ShouldThrowException_whenExpiredRefreshtoken() {
+		Cookie cookie = new Cookie("refreshToken", EXPIRED_TOKEN);
+
+		when(jwtUtil.isExpired(EXPIRED_TOKEN)).thenReturn(true);
+
+		AuthException authException =
+			assertThrows(AuthException.class, () -> authService.reissue(cookie));
+		assertEquals(EXPIRED_REFRESHTOKEN, authException.getExceptionStatus());
 	}
 }
