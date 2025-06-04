@@ -53,4 +53,13 @@ public interface TodoRepository extends JpaRepository<Todo,Long> {
 
 
     List<Todo> findByUserIdAndCreatedAtAfterAndStatusNot(Long userId, LocalDateTime createdAtAfter, TodoStatus status);
+
+    @Query("""
+    SELECT t FROM Todo t
+    WHERE t.user.id = :targetId
+    AND t.createdAt >= :timeLimit
+    AND t.status <> :excludedStatus
+    ORDER BY t.createdAt ASC
+    """)
+    List<Todo> findAllRecentTodosByUserId(long targetId, LocalDateTime localDateTime, TodoStatus todoStatus);
 }
