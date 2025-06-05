@@ -38,13 +38,8 @@ public class SecutiryConfig {
 		http
 			.csrf(AbstractHttpConfigurer::disable)
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/auth/**").permitAll()
+				.requestMatchers("/**").permitAll()
 				.anyRequest().authenticated()
-			)
-			.authenticationProvider(jwtAuthenticationProvider)
-			.addFilterBefore(
-				new JwtFilter(authenticationConfiguration.getAuthenticationManager()),
-				UsernamePasswordAuthenticationFilter.class
 			);
 
 		return http.build();
