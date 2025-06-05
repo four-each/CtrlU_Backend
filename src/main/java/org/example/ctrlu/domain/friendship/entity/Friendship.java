@@ -1,5 +1,6 @@
 package org.example.ctrlu.domain.friendship.entity;
 
+import lombok.Builder;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.global.entity.BaseEntity;
 
@@ -36,4 +37,15 @@ public class Friendship extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "to_user_id", nullable = false)
 	private User toUser;
+
+	@Builder
+	public Friendship(User fromUser, User toUser) {
+		this.fromUser = fromUser;
+		this.toUser = toUser;
+		this.status = FriendshipStatus.PENDING;
+	}
+
+	public void accept() {
+		this.status = FriendshipStatus.ACCEPTED;
+	}
 }

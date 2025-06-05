@@ -1,3 +1,8 @@
+CREATE TABLE IF NOT EXISTS healthy (
+                                       id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                       name VARCHAR(255)
+    );
+
 INSERT INTO healthy (name)
 SELECT val FROM (
                     SELECT '걷기' AS val

@@ -62,8 +62,4 @@ public class Todo extends BaseEntity {
 	public void giveUp() {
 		this.status = TodoStatus.GIVEN_UP;
 	}
-
-	public void delete() {
-		this.status = TodoStatus.DELETED;
-	}
 }

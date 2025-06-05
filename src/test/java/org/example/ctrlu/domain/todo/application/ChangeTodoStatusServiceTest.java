@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.time.Clock;
@@ -35,7 +36,7 @@ public class ChangeTodoStatusServiceTest {
     /**
      * 할 일 완료(포기) 테스트 시나리오
      * - 진행 중인 할 일 성공
-     * - 이미 완료/포기/삭제한 할 일 실패
+     * - 이미 완료/포기한 할 일 실패
      */
 
     private TodoService todoService;
@@ -43,6 +44,7 @@ public class ChangeTodoStatusServiceTest {
     private UserRepository userRepository;
     private AwsS3Service awsS3Service;
     private FriendShipRepository friendShipRepository;
+    private RedisTemplate<String, Object> redisTemplate;
 
     private final long userId = 1L;
     private final long todoId = 100L;
@@ -56,10 +58,12 @@ public class ChangeTodoStatusServiceTest {
         userRepository = mock(UserRepository.class);
         awsS3Service = mock(AwsS3Service.class);
         friendShipRepository = mock(FriendShipRepository.class);
+        redisTemplate = mock(RedisTemplate.class);
+
         Clock fixedClock = Clock.fixed(
                 LocalDateTime.of(2025, 5, 26, 10, 0).atZone(ZoneId.systemDefault()).toInstant(),
                 ZoneId.systemDefault());
-        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock);
+        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock, redisTemplate);
 
         user = User.builder().nickname("닉네임").email("test@gmail.com").password("pass").build();
         todo = mock(Todo.class);
@@ -89,8 +93,8 @@ public class ChangeTodoStatusServiceTest {
         }
 
         @ParameterizedTest
-        @EnumSource(value = TodoStatus.class, names = {"COMPLETED", "GIVEN_UP", "DELETED"})
-        @DisplayName("이미 완료/포기/삭제된 할 일 완료 시 실패")
+        @EnumSource(value = TodoStatus.class, names = {"COMPLETED", "GIVEN_UP"})
+        @DisplayName("이미 완료/포기된 할 일 완료 시 실패")
         void complete_invalidStatus_fail(TodoStatus status) {
             // given
             given(todo.getStatus()).willReturn(status);
@@ -123,8 +127,8 @@ public class ChangeTodoStatusServiceTest {
         }
 
         @ParameterizedTest
-        @EnumSource(value = TodoStatus.class, names = {"COMPLETED", "GIVEN_UP", "DELETED"})
-        @DisplayName("이미 완료/포기/삭제된 할 일 포기 시 실패")
+        @EnumSource(value = TodoStatus.class, names = {"COMPLETED", "GIVEN_UP"})
+        @DisplayName("이미 완료/포기된 할 일 포기 시 실패")
         void giveUp_invalidStatus_fail(TodoStatus status) {
             // given
             given(todo.getStatus()).willReturn(status);

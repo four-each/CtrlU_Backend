@@ -15,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -47,6 +48,7 @@ public class CreateTodoServiceTest {
     private AwsS3Service awsS3Service;
     private TodoService todoService;
     private FriendShipRepository friendShipRepository;
+    private RedisTemplate<String, Object> redisTemplate;
 
     private final long userId = 1L;
     private final String title = "할 일 제목";
@@ -68,10 +70,11 @@ public class CreateTodoServiceTest {
         userRepository = mock(UserRepository.class);
         awsS3Service = mock(AwsS3Service.class);
         friendShipRepository = mock(FriendShipRepository.class);
+        redisTemplate = mock(RedisTemplate.class);
         Clock fixedClock = Clock.fixed(
                 LocalDateTime.of(2025, 5, 26, 10, 0).atZone(ZoneId.systemDefault()).toInstant(),
                 ZoneId.systemDefault());
-        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock);
+        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock, redisTemplate);
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(awsS3Service.uploadImage(startImage)).willReturn(uploadedImageUrl);
