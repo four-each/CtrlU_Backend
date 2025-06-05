@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -203,7 +204,7 @@ public class TodoService {
         List<Todo> recentTodos = todoRepository.findAllRecentTodosByUserId(
                 targetId, LocalDateTime.now().minusHours(24), TodoStatus.GIVEN_UP
         );
-        if (recentTodos.isEmpty()) { throw new TodoException(TodoErrorCode.NOT_FOUND_TODO);}
+        if (recentTodos.isEmpty()) { throw new TodoException(TodoErrorCode.NO_RECENT_TODO);}
 
         //초기 요청(nowId == 0)인 경우
         if (nowId == 0) {
@@ -219,20 +220,20 @@ public class TodoService {
                 if (latestIndex == -1 || latestIndex == recentTodos.size() - 1){
                     Todo first = recentTodos.get(0);
                     if (latestIndex == -1) redisTemplate.opsForHash().put(redisKey, String.valueOf(targetId), String.valueOf(first.getId()));
-                    return GetRecentUploadTodoResponse.from(first, null, getNextId(recentTodos, 0), recentTodos.size());
+                    return GetRecentUploadTodoResponse.from(now(), first, null, getNextId(recentTodos, 0), recentTodos.size());
                 }
                 //유효한 본 이력이고 아직 가장 최신 할 일을 조회하지 않은 경우
                 else {
                     Todo next = recentTodos.get(latestIndex + 1);
                     redisTemplate.opsForHash().put(redisKey, String.valueOf(targetId), String.valueOf(next.getId()));
-                    return GetRecentUploadTodoResponse.from(next, recentTodos.get(latestIndex).getId(), getNextId(recentTodos, latestIndex + 1), recentTodos.size());
+                    return GetRecentUploadTodoResponse.from(now(), next, recentTodos.get(latestIndex).getId(), getNextId(recentTodos, latestIndex + 1), recentTodos.size());
                 }
             }
             //Redis 에 이 전에 본 이력이 없는 경우
             else {
                 Todo first = recentTodos.get(0);
                 redisTemplate.opsForHash().put(redisKey, String.valueOf(targetId), String.valueOf(first.getId()));
-                return GetRecentUploadTodoResponse.from(first, null, getNextId(recentTodos, 0), recentTodos.size());
+                return GetRecentUploadTodoResponse.from(now(), first, null, getNextId(recentTodos, 0), recentTodos.size());
 
             }
         }
@@ -247,10 +248,10 @@ public class TodoService {
             throw new TodoException(TodoErrorCode.NOT_FOUND_TODO);
         }
 
-        User target = userRepository.findById(userId)
+        User target = userRepository.findById(targetId)
                 .orElseThrow(() -> new UserException(NOT_FOUND_USER));
 
-        if(!recentTodos.get(currentIndex).getUser().equals(target)) {
+        if(!Objects.equals(recentTodos.get(currentIndex).getUser(), target)) {
             throw new TodoException(NOT_TARGET_TODO);
         }
 
@@ -262,7 +263,7 @@ public class TodoService {
 
         Long prevId = currentIndex > 0 ? recentTodos.get(currentIndex - 1).getId() : null;
         Long nextId = getNextId(recentTodos, currentIndex);
-        return GetRecentUploadTodoResponse.from(recentTodos.get(currentIndex), prevId, nextId, recentTodos.size());
+        return GetRecentUploadTodoResponse.from(now(), recentTodos.get(currentIndex), prevId, nextId, recentTodos.size());
     }
 
     private Long getNextId(List<Todo> todos, int index) {
