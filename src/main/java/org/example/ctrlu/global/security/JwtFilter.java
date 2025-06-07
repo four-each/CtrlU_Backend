@@ -1,6 +1,7 @@
 package org.example.ctrlu.global.security;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,7 +25,7 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 	private static final String AUTHORIZATION = "Authorization";
 	private static final String AUTHORIZATION_PREFIX = "Bearer ";
 	private static final String SPLIT_REGEX = " ";
-	public static final String WHITE_LIST_PREFIX = "/auth";
+	public static final String[] WHITE_LIST = {"/auth/signup", "/auth/signin", "/auth/reissue", "/auth/verify"};
 
 	public JwtFilter(AuthenticationManager authenticationManager) {
 		super(new AntPathRequestMatcher("/**"));
@@ -37,7 +38,7 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) request;
 		HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
-		if (httpServletRequest.getRequestURI().startsWith(WHITE_LIST_PREFIX)) {
+		if (isWhiteListed(httpServletRequest)) {
 			System.out.println(httpServletRequest.getRequestURI());
 			chain.doFilter(httpServletRequest, httpServletResponse);  // 인증 x
 			return;
@@ -45,6 +46,11 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 
 		// 그 외 요청은 인증 처리
 		super.doFilter(request, response, chain);
+	}
+
+	private boolean isWhiteListed(HttpServletRequest request) {
+		String requestUri = request.getRequestURI();
+		return Arrays.asList(WHITE_LIST).contains(requestUri);
 	}
 
 	@Override
@@ -82,7 +88,7 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 		String body = new ObjectMapper().writeValueAsString(
 			Map.of(
 				"status", 401,
-				"error", "Unauthorized",
+				"code", "UNAUTHORIZED",
 				"message", message
 			)
 		);

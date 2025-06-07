@@ -32,15 +32,4 @@ public class UserService {
 		String encodedPassword = passwordEncoder.encode(request.newPassword());
 		user.updatePassword(encodedPassword);
 	}
-
-	public void deleteUser(Long userId, DeleteUserRequest request) {
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new UserException(NOT_FOUND_USER));
-
-		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-			throw new UserException(INVALID_PASSWORD);
-		}
-
-		user.updateStatus(UserStatus.INACTIVE);
-	}
 }
