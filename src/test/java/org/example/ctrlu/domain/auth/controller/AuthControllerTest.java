@@ -60,7 +60,7 @@ class AuthControllerTest {
 	@DisplayName("회원가입에 성공한다.")
 	void signup_success() throws Exception {
 		// given
-		SignupRequest request = new SignupRequest("test1@example.com", "password123!", "tester");
+		SignupRequest request = new SignupRequest("test1@example.com", "password1235", "tester");
 		String requestJson = objectMapper.writeValueAsString(request);
 
 		MockMultipartFile imageFile = new MockMultipartFile(

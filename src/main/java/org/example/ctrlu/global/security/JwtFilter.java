@@ -39,7 +39,6 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 		HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
 		if (isWhiteListed(httpServletRequest)) {
-			System.out.println(httpServletRequest.getRequestURI());
 			chain.doFilter(httpServletRequest, httpServletResponse);  // 인증 x
 			return;
 		}

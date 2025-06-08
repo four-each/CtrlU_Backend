@@ -2,6 +2,7 @@ package org.example.ctrlu.domain.user.controller;
 
 import org.example.ctrlu.domain.user.application.UserService;
 import org.example.ctrlu.domain.user.dto.request.UpdatePasswordRequest;
+import org.example.ctrlu.global.response.BaseResponse;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,10 +19,12 @@ public class UserController {
 	private final UserService userService;
 
 	@PatchMapping("/password")
-	public void updatePassword(
+	public BaseResponse<Void> updatePassword(
 		@AuthenticationPrincipal Long userId,
 		@Valid @RequestBody UpdatePasswordRequest request
 	) {
 		userService.updatePassword(userId, request);
+		return new BaseResponse<>(null);
 	}
+
 }

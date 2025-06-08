@@ -9,7 +9,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum BaseErrorCode implements ErrorCode {
 	SUCCESS(HttpStatus.OK.value(), "B001", "요청에 성공하였습니다."),
-	ARGUMENT_TYPE_MISMATCH(HttpStatus.BAD_REQUEST.value(), "B002", "잘못된 파라미터 타입입니다.");
+	ARGUMENT_TYPE_MISMATCH(HttpStatus.BAD_REQUEST.value(), "B002", "잘못된 파라미터 타입입니다."),
+	IMAGE_NOT_PRESENT(HttpStatus.BAD_REQUEST.value(), "B003", "Request part 이미지가 존재하지 않습니다.");
 
 	private final int status;
 	private final String code;
