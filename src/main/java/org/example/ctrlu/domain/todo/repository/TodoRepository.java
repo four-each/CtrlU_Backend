@@ -51,9 +51,6 @@ public interface TodoRepository extends JpaRepository<Todo,Long> {
             @Param("friendIds") List<Long> friendIds,
             @Param("since") LocalDateTime since);
 
-
-    List<Todo> findByUserIdAndCreatedAtAfterAndStatusNot(Long userId, LocalDateTime createdAtAfter, TodoStatus status);
-
     @Query("""
         SELECT t FROM Todo t
         WHERE t.user.id = :targetId
@@ -67,4 +64,5 @@ public interface TodoRepository extends JpaRepository<Todo,Long> {
             @Param("excludedStatus") TodoStatus todoStatus
     );
 
+    boolean existsByUserIdAndCreatedAtAfterAndStatusNot(long userId, LocalDateTime localDateTime, TodoStatus todoStatus);
 }

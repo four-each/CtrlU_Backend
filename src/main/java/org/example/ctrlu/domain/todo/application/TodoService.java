@@ -180,10 +180,10 @@ public class TodoService {
     private GetRecentUploadFriendsResponse.Me setMyData(long userId, LocalDateTime now) {
         String myProfileImage = userRepository.getImageById(userId);
         GetRecentUploadFriendsResponse.Status status;
-        List<Todo> todosWithin24 = todoRepository.findByUserIdAndCreatedAtAfterAndStatusNot(userId, now.minusHours(24), TodoStatus.GIVEN_UP);
-        if(!todosWithin24.isEmpty()) {
-           status = GetRecentUploadFriendsResponse.Status.GRAY;
-        } else{
+        boolean exists = todoRepository.existsByUserIdAndCreatedAtAfterAndStatusNot(userId, now.minusHours(24), TodoStatus.GIVEN_UP);
+        if (exists) {
+            status = GetRecentUploadFriendsResponse.Status.GRAY;
+        } else {
             status = GetRecentUploadFriendsResponse.Status.NONE;
         }
 
