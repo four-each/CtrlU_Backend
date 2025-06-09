@@ -181,11 +181,7 @@ public class TodoService {
         String myProfileImage = userRepository.getImageById(userId);
         GetRecentUploadFriendsResponse.Status status;
         boolean exists = todoRepository.existsByUserIdAndCreatedAtAfterAndStatusNot(userId, now.minusHours(24), TodoStatus.GIVEN_UP);
-        if (exists) {
-            status = GetRecentUploadFriendsResponse.Status.GRAY;
-        } else {
-            status = GetRecentUploadFriendsResponse.Status.NONE;
-        }
+        status = exists ? GetRecentUploadFriendsResponse.Status.GRAY : GetRecentUploadFriendsResponse.Status.NONE;
 
         GetRecentUploadFriendsResponse.Me me = new GetRecentUploadFriendsResponse.Me(
                 userId,
