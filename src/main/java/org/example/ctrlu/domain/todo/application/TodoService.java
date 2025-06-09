@@ -42,7 +42,7 @@ public class TodoService {
     private final FriendShipRepository friendShipRepository;
     private final Clock clock;
     private final RedisTemplate<String,Object> redisTemplate;
-    private static final String REDIS_KEY_PREFIX = "story:seen:";
+    private static final String REDIS_KEY_PREFIX = "recentTodo:seen:";
 
     protected LocalDateTime now() {
         return LocalDateTime.now(clock);
@@ -156,7 +156,7 @@ public class TodoService {
             long friendId = todo.getUser().getId();
             long latestTodoId = todo.getId();
 
-            String seenTodoIdStr = (String) redisTemplate.opsForHash().get(redisKey, String.valueOf(friendId));
+            String seenTodoIdStr = (String)redisTemplate.opsForHash().get(redisKey, String.valueOf(friendId));
             long seenTodoId = seenTodoIdStr != null ? Long.parseLong(seenTodoIdStr) : -1;
 
             GetRecentUploadFriendsResponse.Status status = seenTodoId < latestTodoId
@@ -204,7 +204,7 @@ public class TodoService {
 
     @Transactional(readOnly = true)
     public GetRecentUploadTodoResponse getRecentUploadTodo(long userId, long targetId, long nowId) {
-        String redisKey = "recentTodo:seen:" + userId;
+        String redisKey = REDIS_KEY_PREFIX + userId;
         String seenValue = (String) redisTemplate.opsForHash().get(redisKey, String.valueOf(targetId));
 
         //target의 최근 24시간 내 등록된 할 일(오래된 순) 조회

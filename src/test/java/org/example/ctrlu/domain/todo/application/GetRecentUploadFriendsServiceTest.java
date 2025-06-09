@@ -60,7 +60,7 @@ public class GetRecentUploadFriendsServiceTest {
 
     private User me;
     private User friend;
-    private static final String REDIS_KEY_PREFIX = "story:seen:";
+    private static final String REDIS_KEY_PREFIX = "recentTodo:seen:";
     public static final String TODO_TITLE = "할 일 제목";
     public static final LocalTime TODO_CHALLENGE_TIME = LocalTime.of(10, 30);
     public static final String TEST_IMAGE = "test-image.png";

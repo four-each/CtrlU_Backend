@@ -151,7 +151,6 @@ public class GetRecentUploadTodoServiceTest {
         // when
         GetRecentUploadTodoResponse response = todoService.getRecentUploadTodo(userId, targetId, 0L);
 
-        System.out.println("테스트" + response.totalCount());
         // then
         assertThat(response.nextId()).isEqualTo(secondTodoId);
         assertThat(response.prevId()).isEqualTo(null);
