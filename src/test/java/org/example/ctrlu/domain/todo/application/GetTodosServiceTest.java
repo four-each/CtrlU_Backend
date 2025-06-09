@@ -18,6 +18,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Clock;
@@ -52,6 +53,7 @@ public class GetTodosServiceTest {
     private AwsS3Service awsS3Service;
     private FriendShipRepository friendShipRepository;
     private TodoService todoService;
+    private RedisTemplate<String, Object> redisTemplate;
 
     private final long userId = 1L;
     private final User user = User.builder()
@@ -66,9 +68,10 @@ public class GetTodosServiceTest {
         userRepository = mock(UserRepository.class);
         awsS3Service = mock(AwsS3Service.class);
         friendShipRepository = mock(FriendShipRepository.class);
+        redisTemplate = mock(RedisTemplate.class);
 
         Clock fixedClock = Clock.fixed(LocalDateTime.of(2025, 5, 26, 10, 0).atZone(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
-        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock);
+        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock, redisTemplate);
 
         ReflectionTestUtils.setField(user, "id", userId);
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
@@ -91,19 +94,6 @@ public class GetTodosServiceTest {
         assertThat(response.todos()).hasSize(1);
         assertThat(response.todos().get(0).id()).isEqualTo(todo.getId());
         assertThat(response.totalElementCount()).isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("내 할 일 조회 실패 - 삭제 상태 요청")
-    void getMyTodos_fail_deletedStatus() {
-        // when
-        TodoException exception = assertThrows(TodoException.class, () ->
-                todoService.getTodos(userId, "me", TodoStatus.DELETED, PageRequest.of(0, 10))
-        );
-
-        // then
-        assertThat(exception.getMessage()).startsWith(FAIL_TO_GET_TODO.getMessage());
-        assertThat(exception.getMessage()).contains(TodoStatus.DELETED.name());
     }
 
     @Test

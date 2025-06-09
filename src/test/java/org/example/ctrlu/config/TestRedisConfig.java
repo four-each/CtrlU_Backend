@@ -9,6 +9,6 @@ public class TestRedisConfig {
     static {
         REDIS_CONTAINER = new GenericContainer<>("redis:7-alpine")
                 .withExposedPorts(6379);
-        //REDIS_CONTAINER.start();
+        REDIS_CONTAINER.start();
     }
 }
