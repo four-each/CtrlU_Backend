@@ -25,4 +25,4 @@ cloud:
       auto: false
 
 jwt:
-  secret: FAKE
+  secret: NQXmgabxyOmV03yFEujEV2cCSmsE7J6a

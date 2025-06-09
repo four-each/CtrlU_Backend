@@ -13,7 +13,6 @@ import org.example.ctrlu.domain.auth.repository.RedisTokenRepository;
 import org.example.ctrlu.domain.auth.util.JWTUtil;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.entity.UserStatus;
-import org.example.ctrlu.domain.user.exception.UserException;
 import org.example.ctrlu.domain.user.repository.UserRepository;
 import org.example.ctrlu.global.s3.AwsS3Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -157,7 +156,7 @@ public class AuthService {
 			.orElseThrow(() -> new AuthException(NOT_FOUND_USER));
 
 		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-			throw new UserException(INVALID_PASSWORD);
+			throw new AuthException(INVALID_PASSWORD);
 		}
 
 		logout(refreshTokenCookie);
