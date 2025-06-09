@@ -1,5 +1,6 @@
 package org.example.ctrlu.domain.todo.dto.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record GetRecentUploadFriendsResponse(

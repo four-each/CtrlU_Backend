@@ -24,10 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -174,8 +171,22 @@ public class TodoService {
                     status
             ));
         }
-        return responseFriends;
+
+        // 초록색 상태(GREEN)와 회색 상태(GRAY)를 나누고 GREEN이 먼저 오도록 정렬
+        List<GetRecentUploadFriendsResponse.Friend> greenFriends = responseFriends.stream()
+                .filter(f -> f.status() == GetRecentUploadFriendsResponse.Status.GREEN)
+                .collect(Collectors.toList());
+
+        List<GetRecentUploadFriendsResponse.Friend> grayFriends = responseFriends.stream()
+                .filter(f -> f.status() == GetRecentUploadFriendsResponse.Status.GRAY)
+                .collect(Collectors.toList());
+
+        // greenFriends 먼저, 그 뒤에 grayFriends 합침
+        greenFriends.addAll(grayFriends);
+        return greenFriends;
     }
+
+
 
     private GetRecentUploadFriendsResponse.Me setMyData(long userId, LocalDateTime now) {
         String myProfileImage = userRepository.getImageById(userId);
