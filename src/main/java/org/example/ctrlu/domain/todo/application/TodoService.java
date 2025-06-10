@@ -24,8 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -134,7 +134,7 @@ public class TodoService {
             return new GetRecentUploadFriendsResponse(setMyData(userId, now()), List.of(), 0, 0);
         }
 
-        LocalDateTime since = LocalDateTime.now().minusHours(24);
+        LocalDateTime since = now().minusHours(24);
         List<Todo> latestTodos = todoRepository.findPagedLatestTodoPerFriend(
                 friendIds, since, pageable.getPageSize(), (int) pageable.getOffset()
         );
@@ -209,7 +209,7 @@ public class TodoService {
 
         //target의 최근 24시간 내 등록된 할 일(오래된 순) 조회
         List<Todo> recentTodos = todoRepository.findAllRecentTodosByUserId(
-                targetId, LocalDateTime.now().minusHours(24), TodoStatus.GIVEN_UP
+                targetId, now().minusHours(24), TodoStatus.GIVEN_UP
         );
         if (recentTodos.isEmpty()) { throw new TodoException(TodoErrorCode.NO_RECENT_TODO);}
 
