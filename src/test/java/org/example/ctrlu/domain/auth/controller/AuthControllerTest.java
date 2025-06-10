@@ -53,7 +53,8 @@ class AuthControllerTest {
 	// static final GenericContainer<?> redisContainer = TestRedisConfig.REDIS_CONTAINER;
 
 	@Container // Testcontainers가 이 컨테이너의 생명주기를 관리하도록 합니다.
-	public static GenericContainer<?> redisContainer = new GenericContainer<>("redis:7-alpine");
+	public static GenericContainer<?> redisContainer = new GenericContainer<>("redis:7-alpine")
+		.withExposedPorts(6379);
 
     @DynamicPropertySource
     public static void overrideProperties(DynamicPropertyRegistry registry) {

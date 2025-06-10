@@ -94,7 +94,8 @@ public class GetRecentUploadTodoServiceTest {
     // static final GenericContainer<?> redisContainer = TestRedisConfig.REDIS_CONTAINER;
 
     @Container
-    public static GenericContainer<?> redisContainer = new GenericContainer<>("redis:7-alpine");
+    public static GenericContainer<?> redisContainer = new GenericContainer<>("redis:7-alpine")
+        .withExposedPorts(6379);
 
     @DynamicPropertySource
     public static void overrideProperties(DynamicPropertyRegistry registry) {
