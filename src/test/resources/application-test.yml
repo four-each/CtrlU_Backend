@@ -7,10 +7,6 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
         show_sql: true
-  data:
-    redis:
-      host: localhost
-      port: 6379
   mail:
     port: 465
     username: FAKE
