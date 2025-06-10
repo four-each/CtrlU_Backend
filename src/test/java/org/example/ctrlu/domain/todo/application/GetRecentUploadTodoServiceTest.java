@@ -91,11 +91,14 @@ public class GetRecentUploadTodoServiceTest {
     private Todo thirdTodo;
 
     static final MySQLContainer<?> mySQLContainer = TestMySQLConfig.MYSQL_CONTAINER;
-    // static final GenericContainer<?> redisContainer = TestRedisConfig.REDIS_CONTAINER;
+    static final GenericContainer<?> redisContainer;
 
-    @Container
-    public static GenericContainer<?> redisContainer = new GenericContainer<>("redis:7-alpine")
-        .withExposedPorts(6379);
+    static {
+        redisContainer = new GenericContainer<>("redis:7-alpine")
+            .withExposedPorts(6379)
+            .withReuse(true);
+        redisContainer.start();
+    }
 
     @DynamicPropertySource
     public static void overrideProperties(DynamicPropertyRegistry registry) {

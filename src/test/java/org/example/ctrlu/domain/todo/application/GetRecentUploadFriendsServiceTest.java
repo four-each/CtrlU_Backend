@@ -67,11 +67,14 @@ public class GetRecentUploadFriendsServiceTest {
     public static final String TEST_IMAGE = "test-image.png";
 
     static final MySQLContainer<?> mySQLContainer = TestMySQLConfig.MYSQL_CONTAINER;
-    // static final GenericContainer<?> redisContainer = TestRedisConfig.REDIS_CONTAINER;
+    static final GenericContainer<?> redisContainer;
 
-    @Container // Testcontainers가 이 컨테이너의 생명주기를 관리하도록 합니다.
-    public static GenericContainer<?> redisContainer = new GenericContainer<>("redis:7-alpine")
-        .withExposedPorts(6379);
+    static {
+        redisContainer = new GenericContainer<>("redis:7-alpine")
+            .withExposedPorts(6379)
+            .withReuse(true);
+        redisContainer.start();
+    }
 
     @DynamicPropertySource
     public static void overrideProperties(DynamicPropertyRegistry registry) {
