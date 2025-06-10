@@ -81,7 +81,7 @@ public class GetRecentUploadFriendsServiceTest {
         registry.add("spring.datasource.driver-class-name", mySQLContainer::getDriverClassName);
 
         registry.add("spring.data.redis.host", redisContainer::getHost);
-        registry.add("spring.data.redis.port", redisContainer::getExposedPorts);
+        registry.add("spring.data.redis.port", () -> redisContainer.getMappedPort(6379));
     }
 
     @BeforeEach
