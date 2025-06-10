@@ -29,6 +29,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.com.google.common.reflect.Reflection;
 
@@ -90,7 +91,11 @@ public class GetRecentUploadTodoServiceTest {
     private Todo thirdTodo;
 
     static final MySQLContainer<?> mySQLContainer = TestMySQLConfig.MYSQL_CONTAINER;
-    static final GenericContainer<?> redisContainer = TestRedisConfig.REDIS_CONTAINER;
+    // static final GenericContainer<?> redisContainer = TestRedisConfig.REDIS_CONTAINER;
+
+    @Container // Testcontainers가 이 컨테이너의 생명주기를 관리하도록 합니다.
+    public static GenericContainer<?> redisContainer = new GenericContainer<>("redis:7-alpine")
+        .withExposedPorts(6379);
 
     @DynamicPropertySource
     public static void overrideProperties(DynamicPropertyRegistry registry) {
