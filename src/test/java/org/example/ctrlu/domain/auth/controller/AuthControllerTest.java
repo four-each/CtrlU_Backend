@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.nio.charset.StandardCharsets;
 
 import org.example.ctrlu.config.TestMySQLConfig;
+import org.example.ctrlu.config.TestRedisConfig;
 import org.example.ctrlu.domain.auth.application.AuthService;
 import org.example.ctrlu.domain.auth.application.MailService;
 import org.example.ctrlu.domain.auth.dto.request.SignupRequest;
@@ -24,7 +25,9 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,13 +51,26 @@ class AuthControllerTest {
 	private ObjectMapper objectMapper;
 	static final MySQLContainer<?> mySQLContainer = TestMySQLConfig.MYSQL_CONTAINER;
 
+	@Container
+	public static GenericContainer<?> redisContainer = new GenericContainer<>("redis:7-alpine")
+		.withExposedPorts(6379);
+
 	@DynamicPropertySource
-	public static void overrideProperties(DynamicPropertyRegistry registry) {
-		registry.add("spring.datasource.url", mySQLContainer::getJdbcUrl);
-		registry.add("spring.datasource.username", mySQLContainer::getUsername);
-		registry.add("spring.datasource.password", mySQLContainer::getPassword);
-		registry.add("spring.datasource.driver-class-name", mySQLContainer::getDriverClassName);
+	public static void overrideProps(DynamicPropertyRegistry registry){
+		registry.add("spring.redis.host", redisContainer::getHost);
+		registry.add("spring.redis.port", () -> ""+redisContainer.getMappedPort(6379));
 	}
+
+    @DynamicPropertySource
+    public static void overrideProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", mySQLContainer::getJdbcUrl);
+        registry.add("spring.datasource.username", mySQLContainer::getUsername);
+        registry.add("spring.datasource.password", mySQLContainer::getPassword);
+        registry.add("spring.datasource.driver-class-name", mySQLContainer::getDriverClassName);
+
+		registry.add("spring.data.redis.host", redisContainer::getHost);
+		registry.add("spring.data.redis.port", () -> redisContainer.getMappedPort(6379));
+    }
 
 	@Test
 	@DisplayName("회원가입에 성공한다.")
