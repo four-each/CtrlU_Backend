@@ -1,12 +1,15 @@
 package org.example.ctrlu.domain.auth.controller;
 
 import org.example.ctrlu.domain.auth.application.AuthService;
+import org.example.ctrlu.domain.auth.dto.request.DeleteUserRequest;
 import org.example.ctrlu.domain.auth.dto.request.SigninRequest;
 import org.example.ctrlu.domain.auth.dto.request.SignupRequest;
 import org.example.ctrlu.domain.auth.dto.response.SigninResponse;
 import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
 import org.example.ctrlu.global.response.BaseResponse;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -83,5 +86,37 @@ public class AuthController {
 				+ REFRESHTOKEN_EXPIRATION_TIME
 				+ COOKIE_SAMESITE);
 		return new BaseResponse<>(new SigninResponse(tokenInfo.accessToken()));
+	}
+
+	@PostMapping("/logout")
+	public BaseResponse<Void> logout(
+		HttpServletRequest request,
+		HttpServletResponse response
+	) {
+		Cookie refreshToken = WebUtils.getCookie(request, "refreshToken");
+		authService.logout(refreshToken);
+		clearCookie(response);
+		return new BaseResponse<>(null);
+	}
+
+	@DeleteMapping("/withdraw")
+	public BaseResponse<Void> deleteUser(
+		@AuthenticationPrincipal Long userId,
+		@Valid @RequestBody DeleteUserRequest deleteUserRequest,
+		HttpServletRequest request,
+		HttpServletResponse response
+	) {
+		Cookie refreshToken = WebUtils.getCookie(request, "refreshToken");
+		authService.deleteUser(userId, deleteUserRequest, refreshToken);
+		clearCookie(response);
+		return new BaseResponse<>(null);
+	}
+
+	private static void clearCookie(HttpServletResponse response) {
+		String cookie = "refreshToken=; Path=/; HttpOnly; Secure; Max-Age=0; SameSite=None";
+		response.setHeader("Set-Cookie", cookie);
+		response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+		response.setHeader("Pragma", "no-cache");
+		response.setHeader("Expires", "0");
 	}
 }

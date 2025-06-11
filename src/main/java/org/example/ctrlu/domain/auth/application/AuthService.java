@@ -2,9 +2,9 @@ package org.example.ctrlu.domain.auth.application;
 
 import static org.example.ctrlu.domain.auth.exception.AuthErrorCode.*;
 
-import java.util.Objects;
 import java.util.Optional;
 
+import org.example.ctrlu.domain.auth.dto.request.DeleteUserRequest;
 import org.example.ctrlu.domain.auth.dto.request.SigninRequest;
 import org.example.ctrlu.domain.auth.dto.request.SignupRequest;
 import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
@@ -18,6 +18,7 @@ import org.example.ctrlu.global.s3.AwsS3Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.Cookie;
@@ -95,7 +96,7 @@ public class AuthService {
 		User user = userRepository.findByVerifyToken(verifyToken)
 			.orElseThrow(() -> new AuthException(NOT_FOUND_USER));
 
-		user.updateStatus(UserStatus.ACTIVE);
+		user.changeUserStatusToActive();
 		return true;
 	}
 
@@ -112,12 +113,18 @@ public class AuthService {
 	}
 
 	@Transactional
-	public TokenInfo reissue(Cookie cookie) {
-		String refreshToken = Objects.requireNonNull(cookie).getValue();
+	public TokenInfo reissue(Cookie refreshTokenCookie) {
+		if (refreshTokenCookie == null || !StringUtils.hasText(refreshTokenCookie.getValue())) {
+			throw new AuthException(NOT_FOUND_REFRESHTOKEN_IN_COOKIE);
+		}
+
+		String refreshToken = refreshTokenCookie.getValue();
 		validateRefreshToken(refreshToken);
-		Long userId = getUserIdFromRefreshToken(refreshToken);
-		User user = userRepository.findById(userId)
+		Long userId = redisTokenRepository.getUserIdFromRefreshToken(refreshToken);
+		User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
 			.orElseThrow(() -> new AuthException(NOT_FOUND_USER));
+		redisTokenRepository.deleteRefreshToken(refreshToken);
+
 		return getTokenInfo(user);
 	}
 
@@ -127,16 +134,32 @@ public class AuthService {
 		}
 	}
 
-	private Long getUserIdFromRefreshToken(String refreshToken) {
-		Long userId = redisTokenRepository.getValue(refreshToken);
-		redisTokenRepository.deleteRefreshToken(refreshToken);
-		return userId;
-	}
-
 	private TokenInfo getTokenInfo(User user) {
 		String accessToken = jwtUtil.createAccessToken(user.getId(), ACCESSTOKEN_EXPIRATION_TIME);
 		String refreshToken = jwtUtil.createRefreshToken(REFRESHTOKEN_EXPIRATION_TIME);
 		redisTokenRepository.saveRefreshToken(refreshToken, user.getId(), REFRESHTOKEN_EXPIRATION_TIME);
 		return new TokenInfo(accessToken, refreshToken);
+	}
+
+	@Transactional
+	public void logout(Cookie refreshTokenCookie) {
+		if (refreshTokenCookie == null || !StringUtils.hasText(refreshTokenCookie.getValue())) {
+			throw new AuthException(NOT_FOUND_REFRESHTOKEN_IN_COOKIE);
+		}
+		String refreshToken = refreshTokenCookie.getValue();
+		redisTokenRepository.deleteRefreshToken(refreshToken);
+	}
+
+	@Transactional
+	public void deleteUser(Long userId, DeleteUserRequest request, Cookie refreshTokenCookie) {
+		User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
+			.orElseThrow(() -> new AuthException(NOT_FOUND_USER));
+
+		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+			throw new AuthException(INVALID_PASSWORD);
+		}
+
+		logout(refreshTokenCookie);
+		user.softdelete();
 	}
 }

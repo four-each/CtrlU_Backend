@@ -9,7 +9,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 
 @Component
@@ -41,8 +41,7 @@ public class JWTUtil {
 				.getExpiration();
 
 			return expiration.before(new Date());
-		} catch (ExpiredJwtException e) {
-			// 토큰이 만료된 경우 true 반환
+		} catch (JwtException e) {
 			return true;
 		}
 	}

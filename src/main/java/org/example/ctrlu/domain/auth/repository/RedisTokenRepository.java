@@ -17,20 +17,25 @@ public class RedisTokenRepository {
 
 	public void saveRefreshToken(String refreshToken, Long userId, Long expirationTime) {
 		redisTemplate.opsForValue()
-			.set("refreshToken: " + refreshToken,
-				"userId: " + userId,
+			.set("refreshToken:" + refreshToken,
+				"userId:" + userId,
 				Duration.ofMillis(expirationTime));
 	}
 
 	public void deleteRefreshToken(String refreshToken) {
-		redisTemplate.opsForValue().getAndDelete(refreshToken);
+		if (redisTemplate.hasKey("refreshToken:" + refreshToken)) {
+			redisTemplate.opsForValue().getAndDelete("refreshToken:" + refreshToken);
+		} else {
+			throw new AuthException(NOT_FOUND_REFRESHTOKEN_IN_REDIS);
+		}
 	}
 
-	public Long getValue(String refreshToken) {
-		String value = redisTemplate.opsForValue().get("refreshToken: " + refreshToken);
-		if (value == null) {
-			throw new AuthException(NOT_FOUND_REFRESHTOKEN);
+	public Long getUserIdFromRefreshToken(String refreshToken) {
+		if (!redisTemplate.hasKey("refreshToken:" + refreshToken)) {
+			throw new AuthException(NOT_FOUND_REFRESHTOKEN_IN_REDIS);
 		}
-		return Long.parseLong(value.split(" ")[1]);
+
+		String value = redisTemplate.opsForValue().get("refreshToken:" + refreshToken);
+		return Long.parseLong(value.split(":")[1]);
 	}
 }

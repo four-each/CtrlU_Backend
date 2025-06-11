@@ -57,7 +57,21 @@ public class User extends BaseEntity {
 		this.status = UserStatus.NONCERTIFIED;
 	}
 
-	public void updateStatus(UserStatus status) {
-		this.status = status;
+	public void changeUserStatusToActive() {
+		this.status = UserStatus.ACTIVE;
 	}
+
+	public void softdelete() {
+		this.status = UserStatus.INACTIVE;
+	}
+
+	public void updatePassword(String password) {
+		this.password = password;
+	}
+
+	public void updateProfile(String nickname, String image) {
+		this.nickname = nickname;
+		this.image = image;
+	}
+
 }

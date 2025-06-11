@@ -27,7 +27,6 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 		String token = (String) authentication.getCredentials();
-		log.info(token);
 		if (jwtUtil.isExpired(token)) {
 			throw new BadCredentialsException("토큰이 만료되었습니다.");
 		}
