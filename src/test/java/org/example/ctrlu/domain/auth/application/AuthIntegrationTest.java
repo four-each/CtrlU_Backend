@@ -3,7 +3,6 @@ package org.example.ctrlu.domain.auth.application;
 import static org.assertj.core.api.Assertions.*;
 
 import org.example.ctrlu.config.TestMySQLConfig;
-import org.example.ctrlu.config.TestRedisConfig;
 import org.example.ctrlu.domain.auth.dto.request.DeleteUserRequest;
 import org.example.ctrlu.domain.auth.dto.request.SigninRequest;
 import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
@@ -25,6 +24,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import jakarta.servlet.http.Cookie;
@@ -51,7 +51,9 @@ public class AuthIntegrationTest {
 	private String refreshToken;
 
 	static final MySQLContainer<?> mySQLContainer = TestMySQLConfig.MYSQL_CONTAINER;
-	static final GenericContainer<?> redisContainer = TestRedisConfig.REDIS_CONTAINER;
+	@Container
+	public static GenericContainer<?> redisContainer = new GenericContainer<>("redis:7-alpine")
+		.withExposedPorts(6379);
 
 	@DynamicPropertySource
 	public static void overrideProperties(DynamicPropertyRegistry registry) {
@@ -61,7 +63,7 @@ public class AuthIntegrationTest {
 		registry.add("spring.datasource.driver-class-name", mySQLContainer::getDriverClassName);
 
 		registry.add("spring.data.redis.host", redisContainer::getHost);
-		registry.add("spring.data.redis.port", redisContainer::getExposedPorts);
+		registry.add("spring.data.redis.port", () -> redisContainer.getMappedPort(6379));
 	}
 
 	@BeforeEach
