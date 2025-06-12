@@ -36,13 +36,19 @@ public class FriendshipService {
 		friendShipRepository.save(friendship);
 	}
 
+	@Transactional
 	public void deleteFriendship(Long userId, Long friendshipId) {
-		User loginUser = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-			.orElseThrow(() -> new FriendshipException(NOT_FOUND_USER));
-
-		Friendship friendship = friendShipRepository.findByIdAndFromUser(friendshipId, loginUser)
+		Friendship friendship = friendShipRepository.findAcceptedFriendshipById(friendshipId, userId)
 			.orElseThrow(() -> new FriendshipException(NOT_FOUND_FRIENDSHIP));
 
 		friendShipRepository.delete(friendship);
+	}
+
+	@Transactional
+	public void acceptFriendship(Long userId, Long friendshipId) {
+		Friendship friendship = friendShipRepository.findByIdAndToUserAndStatus_Pending(friendshipId, userId)
+			.orElseThrow(() -> new FriendshipException(NOT_FOUND_FRIENDSHIP));
+
+		friendship.accept();
 	}
 }

@@ -5,6 +5,7 @@ import org.example.ctrlu.domain.friendship.dto.request.FriendshipRequest;
 import org.example.ctrlu.global.response.BaseResponse;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,11 +31,20 @@ public class FriendshipController {
 	}
 
 	@DeleteMapping("/{friendshipId}")
-	public BaseResponse<Void> requestFriendship(
+	public BaseResponse<Void> deleteFriendship(
 		@AuthenticationPrincipal Long userId,
 		@PathVariable Long friendshipId
 	) {
 		friendshipService.deleteFriendship(userId, friendshipId);
+		return new BaseResponse<>(null);
+	}
+
+	@PatchMapping("/{friendshipId}")
+	public BaseResponse<Void> acceptFriendship(
+		@AuthenticationPrincipal Long userId,
+		@PathVariable Long friendshipId
+	) {
+		friendshipService.acceptFriendship(userId, friendshipId);
 		return new BaseResponse<>(null);
 	}
 }
