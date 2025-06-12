@@ -10,7 +10,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum FriendshipErrorCode implements ErrorCode {
 
-	NOT_FOUND_USER(HttpStatus.BAD_REQUEST.value(),"F001","존재하지 않는 사용자입니다.");
+	NOT_FOUND_USER(HttpStatus.NOT_FOUND.value(),"F001","존재하지 않는 사용자입니다."),
+	NOT_FOUND_FRIENDSHIP(HttpStatus.NOT_FOUND.value(),"F001","존재하지 않는 친구입니다.");
 
 	private final int status;
 	private final String code;
