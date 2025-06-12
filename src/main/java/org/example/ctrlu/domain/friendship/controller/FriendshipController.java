@@ -47,4 +47,22 @@ public class FriendshipController {
 		friendshipService.acceptFriendship(userId, friendshipId);
 		return new BaseResponse<>(null);
 	}
+
+	@PatchMapping("/{friendshipId}/reject")
+	public BaseResponse<Void> rejectFriendship(
+		@AuthenticationPrincipal Long userId,
+		@PathVariable Long friendshipId
+	) {
+		friendshipService.rejectFriendship(userId, friendshipId);
+		return new BaseResponse<>(null);
+	}
+
+	@DeleteMapping("/{friendshipId}/cancel")
+	public BaseResponse<Void> cancelFriendship(
+		@AuthenticationPrincipal Long userId,
+		@PathVariable Long friendshipId
+	) {
+		friendshipService.cancelFriendship(userId, friendshipId);
+		return new BaseResponse<>(null);
+	}
 }
