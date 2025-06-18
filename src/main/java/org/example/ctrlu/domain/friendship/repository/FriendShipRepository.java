@@ -25,21 +25,10 @@ public interface FriendShipRepository extends JpaRepository<Friendship,Long> {
     @Query("""
         SELECT f
         FROM Friendship f
-        WHERE f.id = :friendshipId
-            AND (f.fromUser = :loginUser OR f.toUser = :target)
-            AND (f.toUser = :loginUser OR f.fromUser = :target)
-            AND f.status = :status
+        WHERE (f.fromUser = :loginUser AND f.toUser = :target)
+           OR (f.fromUser = :target AND f.toUser = :loginUser)
     """)
-    boolean existsFriendshipBy(User loginUser, User target, FriendshipStatus status);
-
-    @Query("""
-        SELECT f
-        FROM Friendship f
-        WHERE f.id = :friendshipId
-            AND (f.fromUser = :fromUser OR f.toUser = :toUser)
-            AND f.status = 'REJECTED'
-    """)
-    boolean existsRejectedFriendshipBy(User fromUser, User toUser);
+    Optional<Friendship> findFriendshipBetween(User loginUser, User target);
 
     @Query("""
         SELECT f
