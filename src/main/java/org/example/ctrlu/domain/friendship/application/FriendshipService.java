@@ -34,7 +34,7 @@ public class FriendshipService {
 			.orElseThrow(() -> new FriendshipException(NOT_FOUND_USER));
 
 		User target = userRepository.findByIdAndStatus(request.targetId(), UserStatus.ACTIVE)
-			.orElseThrow(() -> new FriendshipException(NOT_FOUND_USER));
+			.orElseThrow(() -> new FriendshipException(NOT_FOUND_TARGET));
 
 		if (Objects.equals(userId, request.targetId())) {
 			throw new FriendshipException(CANNOT_FRIEND_SELF);
@@ -54,6 +54,7 @@ public class FriendshipService {
 						throw new FriendshipException(REJECTED_FRIENDSHIP);
 					}
 					friendShipRepository.delete(currentFriendship.get());
+					friendShipRepository.flush();
 				}
 			}
 		}
@@ -83,7 +84,7 @@ public class FriendshipService {
 	@Transactional
 	public void acceptFriendship(Long userId, Long friendshipId) {
 		Friendship friendship =
-			friendShipRepository.findByIdAndToUserAndStatus(friendshipId, userId, FriendshipStatus.PENDING)
+			friendShipRepository.findByIdAndToUserIdAndStatus(friendshipId, userId, FriendshipStatus.PENDING)
 				.orElseThrow(() -> new FriendshipException(NOT_FOUND_FRIENDSHIP));
 
 		if (friendShipRepository.findAcceptedFriendIds(userId).size() >= MAX_FRIENDS) {
@@ -96,7 +97,7 @@ public class FriendshipService {
 	@Transactional
 	public void rejectFriendship(Long userId, Long friendshipId) {
 		Friendship friendship =
-			friendShipRepository.findByIdAndToUserAndStatus(friendshipId, userId, FriendshipStatus.PENDING)
+			friendShipRepository.findByIdAndToUserIdAndStatus(friendshipId, userId, FriendshipStatus.PENDING)
 				.orElseThrow(() -> new FriendshipException(NOT_FOUND_FRIENDSHIP));
 
 		friendship.reject();
@@ -105,7 +106,7 @@ public class FriendshipService {
 	@Transactional
 	public void cancelFriendship(Long userId, Long friendshipId) {
 		Friendship friendship =
-			friendShipRepository.findByIdAndFromUserAndStatus(friendshipId, userId, FriendshipStatus.PENDING)
+			friendShipRepository.findByIdAndFromUserIdAndStatus(friendshipId, userId, FriendshipStatus.PENDING)
 				.orElseThrow(() -> new FriendshipException(NOT_FOUND_FRIENDSHIP));
 
 		friendShipRepository.delete(friendship);
