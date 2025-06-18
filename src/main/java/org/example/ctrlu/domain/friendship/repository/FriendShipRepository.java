@@ -20,7 +20,7 @@ public interface FriendShipRepository extends JpaRepository<Friendship,Long> {
     WHERE (f.fromUser.id = :userId OR f.toUser.id = :userId)
       AND f.status = 'ACCEPTED'
     """)
-    List<Long> findAcceptedFriendIds(@Param("userId") long userId);
+    List<Long> findAcceptedFriendIds(@Param("userId") Long userId);
 
     @Query("""
         SELECT f
@@ -39,6 +39,6 @@ public interface FriendShipRepository extends JpaRepository<Friendship,Long> {
     """)
     Optional<Friendship> findAcceptedFriendshipById(Long friendshipId, Long userId);
 
-    Optional<Friendship> findByIdAndToUserAndStatus(Long friendshipId, Long toUserId, FriendshipStatus status);
-    Optional<Friendship> findByIdAndFromUserAndStatus(Long friendshipId, Long fromUserId, FriendshipStatus status);
+    Optional<Friendship> findByIdAndToUserIdAndStatus(Long friendshipId, Long toUserId, FriendshipStatus status);
+    Optional<Friendship> findByIdAndFromUserIdAndStatus(Long friendshipId, Long fromUserId, FriendshipStatus status);
 }
