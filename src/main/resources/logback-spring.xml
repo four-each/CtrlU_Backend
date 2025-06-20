@@ -4,7 +4,7 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
-    <property name="LOG_FILE_LOCATION" value="/var/log/ctrlu"/>
+    <property name="LOG_FILE_LOCATION" value="./logs"/>
     <property name="LOG_FILE_NAME" value="ctrlu.log"/>
 
     <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
