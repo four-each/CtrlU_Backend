@@ -49,10 +49,12 @@ public class AuthIntegrationTest {
 	private PasswordEncoder passwordEncoder;
 	private User user;
 	private String refreshToken;
+
 	static final MySQLContainer<?> mySQLContainer = TestMySQLConfig.MYSQL_CONTAINER;
+
 	@Container
 	public static GenericContainer<?> redisContainer = new GenericContainer<>("redis:7-alpine")
-		.withExposedPorts(6379);
+			.withExposedPorts(6379);
 
 	@DynamicPropertySource
 	public static void overrideProperties(DynamicPropertyRegistry registry) {
