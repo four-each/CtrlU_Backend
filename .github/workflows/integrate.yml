@@ -32,7 +32,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Run tests with Gradle
-        run: ./gradlew test --stacktrace --info
+        run: ./gradlew test
         env:
           TESTCONTAINERS_RYUK_DISABLED: true
 
