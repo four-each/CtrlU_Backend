@@ -37,6 +37,9 @@ services:
       - .env.prod
     networks:
       - backend-net
+    volumes:
+      # 호스트의 /var/log/ctrlu-app-logs 디렉토리를 컨테이너의 /app/logs 디렉토리로 마운트
+      - /var/log/ctrlu-app-logs:/app/logs
 
   certbot-renew:
     image: certbot/certbot
