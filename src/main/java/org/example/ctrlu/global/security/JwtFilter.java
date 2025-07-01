@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -20,6 +21,7 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+@Slf4j
 public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 	public static final String CONTENT_TYPE = "application/json;charset=UTF-8";
 	private static final String AUTHORIZATION = "Authorization";
@@ -81,6 +83,8 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 	}
 
 	private void setErrorResponse(HttpServletResponse response, String message) throws IOException {
+		log.warn("인증/인가 오류 발생: {}", message);
+
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		response.setContentType(CONTENT_TYPE);
 
