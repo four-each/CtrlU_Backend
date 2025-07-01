@@ -56,6 +56,9 @@ jobs:
             echo "${{ secrets.ENV_PROD }}" > /home/ubuntu/ctrlu_backend/.env.prod
             export $(cat /home/ubuntu/ctrlu_backend/.env.prod | xargs)
             
+            sudo mkdir -p /var/log/ctrlu-app-logs
+            sudo chmod 777 /var/log/ctrlu-app-logs 
+            
             cd /home/ubuntu/ctrlu_backend
             docker-compose -f docker-compose.prod.yml pull
             docker-compose -f docker-compose.prod.yml down
