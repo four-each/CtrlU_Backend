@@ -4,22 +4,36 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
+    <!-- 프로파일에 관계없이 기본 로그 파일 위치 설정 (로컬 테스트에서는 사용되지 않음) -->
     <property name="LOG_FILE_LOCATION" value="/app/logs"/>
     <property name="LOG_FILE_NAME" value="ctrlu.log"/>
 
-    <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_FILE_LOCATION}/${LOG_FILE_NAME}</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_FILE_LOCATION}/archived/${LOG_FILE_NAME}.%d{yyyy-MM-dd}.gz</fileNamePattern>
-            <maxHistory>30</maxHistory> </rollingPolicy>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <includeMdc>true</includeMdc> <fieldNames>
-            <timestamp>@timestamp</timestamp> <version>[ignore]</version> </fieldNames>
-            <customFields>{"application":"ctrlu-app", "environment":"production"}</customFields>
-        </encoder>
-    </appender>
+    <!-- 'test' 프로파일이 아닐 때만 FILE_JSON Appender를 활성화 -->
+    <springProfile name="!test">
+        <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${LOG_FILE_LOCATION}/${LOG_FILE_NAME}</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>${LOG_FILE_LOCATION}/archived/${LOG_FILE_NAME}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+                <maxHistory>30</maxHistory>
+            </rollingPolicy>
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeMdc>true</includeMdc>
+                <fieldNames>
+                    <timestamp>@timestamp</timestamp>
+                    <version>[ignore]</version>
+                </fieldNames>
+                <customFields>{"application":"ctrlu-app", "environment":"production"}</customFields>
+            </encoder>
+        </appender>
+    </springProfile>
 
     <root level="INFO">
-        <appender-ref ref="CONSOLE"/> <appender-ref ref="FILE_JSON"/> </root>
+        <appender-ref ref="CONSOLE"/>
+        <!-- 'test' 프로파일이 아닐 때만 FILE_JSON Appender를 참조 -->
+        <springProfile name="!test">
+            <appender-ref ref="FILE_JSON"/>
+        </springProfile>
+    </root>
 
-    <logger name="com.example.myapp" level="DEBUG"/> </configuration>
+    <logger name="org.example.ctrlu" level="DEBUG"/> <!-- 당신의 패키지명으로 변경 -->
+</configuration>
