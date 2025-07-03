@@ -7,14 +7,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface FriendShipRepository extends JpaRepository<Friendship,Long> {
+public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
     @Query("""
-    SELECT CASE 
-               WHEN f.fromUser.id = :userId THEN f.toUser.id 
-               ELSE f.fromUser.id 
+    SELECT CASE
+               WHEN f.fromUser.id = :userId THEN f.toUser.id
+               ELSE f.fromUser.id
            END
     FROM Friendship f
     WHERE (f.fromUser.id = :userId OR f.toUser.id = :userId)
@@ -41,4 +42,5 @@ public interface FriendShipRepository extends JpaRepository<Friendship,Long> {
 
     Optional<Friendship> findByIdAndToUserIdAndStatus(Long friendshipId, Long toUserId, FriendshipStatus status);
     Optional<Friendship> findByIdAndFromUserIdAndStatus(Long friendshipId, Long fromUserId, FriendshipStatus status);
+    Integer deleteByStatusAndRejectedAtBefore(FriendshipStatus friendshipStatus, LocalDateTime localDateTime);
 }
