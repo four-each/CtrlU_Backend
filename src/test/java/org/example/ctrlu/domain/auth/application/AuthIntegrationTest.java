@@ -49,7 +49,6 @@ public class AuthIntegrationTest {
 	private PasswordEncoder passwordEncoder;
 	private User user;
 	private String refreshToken;
-
 	static final MySQLContainer<?> mySQLContainer = TestMySQLConfig.MYSQL_CONTAINER;
 
 	@Container
