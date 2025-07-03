@@ -1,7 +1,7 @@
 package org.example.ctrlu.domain.todo.application;
 
 import lombok.RequiredArgsConstructor;
-import org.example.ctrlu.domain.friendship.repository.FriendShipRepository;
+import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
 import org.example.ctrlu.domain.todo.dto.request.CompleteTodoRequest;
 import org.example.ctrlu.domain.todo.dto.request.CreateTodoRequest;
 import org.example.ctrlu.domain.todo.dto.response.*;
@@ -24,7 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -39,7 +38,7 @@ public class TodoService {
     private final TodoRepository todoRepository;
     private final UserRepository userRepository;
     private final AwsS3Service awsS3Service;
-    private final FriendShipRepository friendShipRepository;
+    private final FriendshipRepository friendshipRepository;
     private final Clock clock;
     private final RedisTemplate<String,Object> redisTemplate;
     private static final String REDIS_KEY_PREFIX = "recentTodo:seen:";
@@ -112,7 +111,7 @@ public class TodoService {
 
     private GetTodosResponse getFriendTodos(long userId, TodoStatus status, Pageable pageable) {
         if (!status.equals(TodoStatus.IN_PROGRESS)) throw new TodoException(FAIL_TO_GET_FRIEND_TODOS);
-        List<Long> friendIds = friendShipRepository.findAcceptedFriendIds(userId);
+        List<Long> friendIds = friendshipRepository.findAcceptedFriendIds(userId);
         if (friendIds.isEmpty()) {
             return new GetTodosResponse(List.of(), 0, 0);
         }
@@ -129,7 +128,7 @@ public class TodoService {
 
     @Transactional(readOnly = true)
     public GetRecentUploadFriendsResponse getRecentUploadFriends(long userId, Pageable pageable) {
-        List<Long> friendIds = friendShipRepository.findAcceptedFriendIds(userId);
+        List<Long> friendIds = friendshipRepository.findAcceptedFriendIds(userId);
         if (friendIds.isEmpty()) {
             return new GetRecentUploadFriendsResponse(setMyData(userId, now()), List.of(), 0, 0);
         }

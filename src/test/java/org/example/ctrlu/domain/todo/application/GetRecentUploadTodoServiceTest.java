@@ -8,7 +8,7 @@ import java.util.Objects;
 
 import org.example.ctrlu.config.TestMySQLConfig;
 import org.example.ctrlu.domain.friendship.entity.Friendship;
-import org.example.ctrlu.domain.friendship.repository.FriendShipRepository;
+import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
 import org.example.ctrlu.domain.todo.dto.response.GetRecentUploadTodoResponse;
 import org.example.ctrlu.domain.todo.entity.Todo;
 import org.example.ctrlu.domain.todo.exception.TodoErrorCode;
@@ -54,7 +54,7 @@ public class GetRecentUploadTodoServiceTest {
     @Autowired private TodoRepository todoRepository;
     @Autowired private TodoService todoService;
     @Autowired private UserRepository userRepository;
-    @Autowired private FriendShipRepository friendShipRepository;
+    @Autowired private FriendshipRepository friendshipRepository;
     @Autowired private RedisTemplate<String, Object> redisTemplate;
 
     public static final LocalTime TODO_CHALLENGE_TIME = LocalTime.of(10, 30);
@@ -73,9 +73,7 @@ public class GetRecentUploadTodoServiceTest {
     private Todo firstTodo;
     private Todo secondTodo;
     private Todo thirdTodo;
-
     static final MySQLContainer<?> mySQLContainer = TestMySQLConfig.MYSQL_CONTAINER;
-
     @Container
     public static GenericContainer<?> redisContainer = new GenericContainer<>("redis:7-alpine")
         .withExposedPorts(6379);
@@ -94,7 +92,7 @@ public class GetRecentUploadTodoServiceTest {
     @BeforeEach
     void setUp() {
         todoRepository.deleteAll();
-        friendShipRepository.deleteAll();
+        friendshipRepository.deleteAll();
         userRepository.deleteAll();
         Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().flushAll();
 
@@ -105,7 +103,7 @@ public class GetRecentUploadTodoServiceTest {
         targetId = userRepository.save(target).getId();
         Friendship friendShip = Friendship.builder().fromUser(user).toUser(target).build();
         friendShip.accept();
-        friendShipRepository.save(friendShip);
+        friendshipRepository.save(friendShip);
         redisKey = "recentTodo:seen:" + userId;
 
         firstTodo = Todo.builder().title("첫 번째 할일").challengeTime(TODO_CHALLENGE_TIME).startImage(TEST_IMAGE).user(target).build();

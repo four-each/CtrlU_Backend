@@ -49,16 +49,9 @@ class AuthControllerTest {
 	@Autowired
 	private ObjectMapper objectMapper;
 	static final MySQLContainer<?> mySQLContainer = TestMySQLConfig.MYSQL_CONTAINER;
-
 	@Container
 	public static GenericContainer<?> redisContainer = new GenericContainer<>("redis:7-alpine")
 		.withExposedPorts(6379);
-
-	@DynamicPropertySource
-	public static void overrideProps(DynamicPropertyRegistry registry){
-		registry.add("spring.redis.host", redisContainer::getHost);
-		registry.add("spring.redis.port", () -> ""+redisContainer.getMappedPort(6379));
-	}
 
     @DynamicPropertySource
     public static void overrideProperties(DynamicPropertyRegistry registry) {

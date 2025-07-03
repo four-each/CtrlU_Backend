@@ -1,6 +1,6 @@
 package org.example.ctrlu.domain.todo.application;
 
-import org.example.ctrlu.domain.friendship.repository.FriendShipRepository;
+import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
 import org.example.ctrlu.domain.todo.dto.response.GetTodosResponse;
 import org.example.ctrlu.domain.todo.entity.Todo;
 import org.example.ctrlu.domain.todo.entity.TodoStatus;
@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.example.ctrlu.domain.todo.exception.TodoErrorCode.FAIL_TO_GET_TODO;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -51,7 +50,7 @@ public class GetTodosServiceTest {
     private TodoRepository todoRepository;
     private UserRepository userRepository;
     private AwsS3Service awsS3Service;
-    private FriendShipRepository friendShipRepository;
+    private FriendshipRepository friendshipRepository;
     private TodoService todoService;
     private RedisTemplate<String, Object> redisTemplate;
 
@@ -67,11 +66,11 @@ public class GetTodosServiceTest {
         todoRepository = mock(TodoRepository.class);
         userRepository = mock(UserRepository.class);
         awsS3Service = mock(AwsS3Service.class);
-        friendShipRepository = mock(FriendShipRepository.class);
+        friendshipRepository = mock(FriendshipRepository.class);
         redisTemplate = mock(RedisTemplate.class);
 
         Clock fixedClock = Clock.fixed(LocalDateTime.of(2025, 5, 26, 10, 0).atZone(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
-        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock, redisTemplate);
+        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendshipRepository, fixedClock, redisTemplate);
 
         ReflectionTestUtils.setField(user, "id", userId);
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
@@ -109,7 +108,7 @@ public class GetTodosServiceTest {
         Todo friendTodo2 = makeTodoWithId(friendId2, LocalDateTime.of(2025, 5, 26, 9, 0), TodoStatus.IN_PROGRESS, createdLateTodoId);
         Page<Todo> page = new PageImpl<>(List.of(friendTodo1, friendTodo2));
 
-        given(friendShipRepository.findAcceptedFriendIds(userId)).willReturn(friendIds);
+        given(friendshipRepository.findAcceptedFriendIds(userId)).willReturn(friendIds);
         given(todoRepository.findAllByUserIdInAndStatus(eq(friendIds), eq(TodoStatus.IN_PROGRESS), any()))
                 .willReturn(page);
 
@@ -137,7 +136,7 @@ public class GetTodosServiceTest {
     @Test
     @DisplayName("친구 없음 - 빈 리스트 반환")
     void getFriendTodos_empty_whenNoFriends() {
-        given(friendShipRepository.findAcceptedFriendIds(userId)).willReturn(List.of());
+        given(friendshipRepository.findAcceptedFriendIds(userId)).willReturn(List.of());
 
         // when
         GetTodosResponse response = todoService.getTodos(userId, "friend", TodoStatus.IN_PROGRESS, PageRequest.of(0, 10));
