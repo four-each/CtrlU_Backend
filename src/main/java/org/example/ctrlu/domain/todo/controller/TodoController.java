@@ -11,6 +11,7 @@ import org.example.ctrlu.global.response.BaseResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,73 +23,68 @@ public class TodoController {
 
     @PostMapping
     public BaseResponse<CreateTodoResponse> createTodo(
-            @RequestParam Long userId,
             @RequestPart("request") @Valid CreateTodoRequest request,
-            @RequestPart("startImage") MultipartFile startImage
+            @RequestPart("startImage") MultipartFile startImage,
+            @AuthenticationPrincipal Long userId
     ){
-        //todo: 인증 구현 후 userId 받아오는 로직 구현 필요
         CreateTodoResponse response = todoService.createTodo(userId, request, startImage);
         return new BaseResponse<>(response);
     }
 
     @GetMapping("/{todoId}")
-    public BaseResponse<GetTodoResponse> getTodo(@PathVariable long todoId){
-        //todo: 인증 구현 후 userId 받아오는 로직 구현 필요
-        GetTodoResponse response = todoService.getTodo(1L, todoId);
+    public BaseResponse<GetTodoResponse> getTodo(@PathVariable long todoId,
+                                                 @AuthenticationPrincipal Long userId){
+        GetTodoResponse response = todoService.getTodo(userId, todoId);
         return new BaseResponse<>(response);
     }
 
     @PostMapping("/{todoId}/complete")
     public BaseResponse<Void> completeTodo(
-            @RequestParam long userId,
             @PathVariable long todoId,
             @RequestPart("request") @Valid CompleteTodoRequest request,
-            @RequestPart("endImage") MultipartFile endImage
+            @RequestPart("endImage") MultipartFile endImage,
+            @AuthenticationPrincipal Long userId
     ){
-        //todo: 인증 구현 후 userId 받아오는 로직 구현 필요
         todoService.completeTodo(userId, todoId, request, endImage);
         return new BaseResponse<>(null);
     }
 
     @PostMapping("/{todoId}/giveUp")
-    public BaseResponse<Void> giveUpTodo(@RequestParam long userId, @PathVariable long todoId){
-        //todo: 인증 구현 후 userId 받아오는 로직 구현 필요
+    public BaseResponse<Void> giveUpTodo(@PathVariable long todoId,
+                                         @AuthenticationPrincipal Long userId){
         todoService.giveUpTodo(userId, todoId);
         return new BaseResponse<>(null);
     }
 
     @DeleteMapping("/{todoId}")
-    public BaseResponse<Void> deleteTodo(@RequestParam long userId, @PathVariable long todoId){
-        //todo: 인증 구현 후 userId 받아오는 로직 구현 필요
+    public BaseResponse<Void> deleteTodo(@PathVariable long todoId,
+                                         @AuthenticationPrincipal Long userId){
         todoService.deleteTodo(userId, todoId);
         return new BaseResponse<>(null);
     }
 
     @GetMapping
-    public BaseResponse<GetTodosResponse> getTodos(@RequestParam long userId,
-                                                   @RequestParam String target,
+    public BaseResponse<GetTodosResponse> getTodos(@RequestParam String target,
+                                                   @AuthenticationPrincipal Long userId,
                                                    @RequestParam TodoStatus status,
                                                    @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC, page= 0) Pageable pageable){
-        //todo: 인증 구현 후 userId 받아오는 로직 구현 필요
         if(!target.equals("me") && !target.equals("friend")) throw new IllegalArgumentException("잘못된 접근입니다.");
-        GetTodosResponse response = todoService.getTodos(1L, target, status, pageable);
+        GetTodosResponse response = todoService.getTodos(userId, target, status, pageable);
         return new BaseResponse<>(response);
     }
 
     @GetMapping("/within-24hours")
-    public BaseResponse<GetRecentUploadFriendsResponse> getRecentUploadFriends(@RequestParam long userId,
+    public BaseResponse<GetRecentUploadFriendsResponse> getRecentUploadFriends(@AuthenticationPrincipal Long userId,
                                                                                @PageableDefault(size = 10, page= 0) Pageable pageable){
-        //todo: 인증 구현 후 userId 받아오는 로직 구현 필요
-        GetRecentUploadFriendsResponse response = todoService.getRecentUploadFriends(1L, pageable);
+        GetRecentUploadFriendsResponse response = todoService.getRecentUploadFriends(userId, pageable);
         return new BaseResponse<>(response);
     }
 
     @GetMapping("/detail/within-24hours")
-    public BaseResponse<GetRecentUploadTodoResponse> getRecentUploadTodo(@RequestParam long userId,
+    public BaseResponse<GetRecentUploadTodoResponse> getRecentUploadTodo(@AuthenticationPrincipal Long userId,
                                                                          @RequestParam long targetId,
                                                                          @RequestParam long nowId){
-        //todo: 인증 구현 후 userId 받아오는 로직 구현 필요
-        GetRecentUploadTodoResponse response = todoService.getRecentUploadTodo(1L, targetId, nowId);
+        GetRecentUploadTodoResponse response = todoService.getRecentUploadTodo(userId, targetId, nowId);
         return new BaseResponse<>(response);
     }
 }
