@@ -1,15 +1,15 @@
 package org.example.ctrlu.domain.friendship.repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import org.example.ctrlu.domain.friendship.entity.Friendship;
 import org.example.ctrlu.domain.friendship.entity.FriendshipStatus;
 import org.example.ctrlu.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
     @Query("""
@@ -29,7 +29,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
         WHERE (f.fromUser = :loginUser AND f.toUser = :target)
            OR (f.fromUser = :target AND f.toUser = :loginUser)
     """)
-    Optional<Friendship> findFriendshipBetween(User loginUser, User target);
+    Optional<Friendship> findFriendshipBetween(@Param("loginUser") User loginUser, @Param("target") User target);
 
     @Query("""
         SELECT f
@@ -39,7 +39,6 @@ public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
             AND f.status = 'ACCEPTED'
     """)
     Optional<Friendship> findAcceptedFriendshipById(Long friendshipId, Long userId);
-
     Optional<Friendship> findByIdAndToUserIdAndStatus(Long friendshipId, Long toUserId, FriendshipStatus status);
     Optional<Friendship> findByIdAndFromUserIdAndStatus(Long friendshipId, Long fromUserId, FriendshipStatus status);
     Integer deleteByStatusAndRejectedAtBefore(FriendshipStatus friendshipStatus, LocalDateTime localDateTime);
