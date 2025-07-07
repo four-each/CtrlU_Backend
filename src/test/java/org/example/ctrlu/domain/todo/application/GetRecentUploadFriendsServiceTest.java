@@ -1,10 +1,13 @@
 package org.example.ctrlu.domain.todo.application;
 
+import static org.assertj.core.api.Assertions.*;
+
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import org.example.ctrlu.config.TestMySQLConfig;
-import org.example.ctrlu.config.TestRedisConfig;
 import org.example.ctrlu.domain.friendship.entity.Friendship;
-import org.example.ctrlu.domain.friendship.repository.FriendShipRepository;
+import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
 import org.example.ctrlu.domain.todo.dto.response.GetRecentUploadFriendsResponse;
 import org.example.ctrlu.domain.todo.entity.Todo;
 import org.example.ctrlu.domain.todo.repository.TodoRepository;
@@ -14,7 +17,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
@@ -28,12 +30,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Testcontainers
@@ -56,7 +52,7 @@ public class GetRecentUploadFriendsServiceTest {
     @Autowired private TodoService todoService;
     @Autowired private TodoRepository todoRepository;
     @Autowired private UserRepository userRepository;
-    @Autowired private FriendShipRepository friendShipRepository;
+    @Autowired private FriendshipRepository friendshipRepository;
     @Autowired private RedisTemplate<String, Object> redisTemplate;
 
     private User me;
@@ -86,7 +82,7 @@ public class GetRecentUploadFriendsServiceTest {
     @BeforeEach
     void setUp() {
         todoRepository.deleteAll();
-        friendShipRepository.deleteAll();
+        friendshipRepository.deleteAll();
         userRepository.deleteAll();
         redisTemplate.getConnectionFactory().getConnection().flushAll();
 
@@ -141,7 +137,7 @@ public class GetRecentUploadFriendsServiceTest {
         // given
         Friendship friendShip = Friendship.builder().fromUser(me).toUser(friend).build();
         friendShip.accept();
-        friendShipRepository.save(friendShip);
+        friendshipRepository.save(friendShip);
         todoRepository.save(Todo.builder()
                 .user(friend)
                 .title(TODO_TITLE)
@@ -165,7 +161,7 @@ public class GetRecentUploadFriendsServiceTest {
         // given
         Friendship friendShip = Friendship.builder().fromUser(me).toUser(friend).build();
         friendShip.accept();
-        friendShipRepository.save(friendShip);
+        friendshipRepository.save(friendShip);
 
         Todo todo = todoRepository.save(Todo.builder()
                 .user(friend)
@@ -191,7 +187,7 @@ public class GetRecentUploadFriendsServiceTest {
         // given
         Friendship friendShip = Friendship.builder().fromUser(me).toUser(friend).build();
         friendShip.accept();
-        friendShipRepository.save(friendShip);
+        friendshipRepository.save(friendShip);
 
         Todo oldTodo = Todo.builder()
                 .user(friend)
@@ -228,7 +224,7 @@ public class GetRecentUploadFriendsServiceTest {
         // given
         Friendship friendShip = Friendship.builder().fromUser(me).toUser(friend).build();
         friendShip.accept();
-        friendShipRepository.save(friendShip);
+        friendshipRepository.save(friendShip);
 
         User friend2 = userRepository.save(User.builder()
                 .nickname("친구2")
@@ -237,7 +233,7 @@ public class GetRecentUploadFriendsServiceTest {
                 .build());
         Friendship friendShip2 = Friendship.builder().fromUser(me).toUser(friend2).build();
         friendShip2.accept();
-        friendShipRepository.save(friendShip2);
+        friendshipRepository.save(friendShip2);
 
         Todo firstUploadFriendTodo = Todo.builder()
                 .user(friend)
@@ -274,7 +270,7 @@ public class GetRecentUploadFriendsServiceTest {
         // given
         Friendship friendShip = Friendship.builder().fromUser(me).toUser(friend).build();
         friendShip.accept();
-        friendShipRepository.save(friendShip);
+        friendshipRepository.save(friendShip);
 
         // 포기한 할 일 등록
         Todo givenUpTodo = Todo.builder()

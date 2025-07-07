@@ -1,6 +1,6 @@
 package org.example.ctrlu.domain.todo.application;
 
-import org.example.ctrlu.domain.friendship.repository.FriendShipRepository;
+import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
 import org.example.ctrlu.domain.todo.dto.request.CreateTodoRequest;
 import org.example.ctrlu.domain.todo.dto.response.CreateTodoResponse;
 import org.example.ctrlu.domain.todo.entity.Todo;
@@ -13,11 +13,8 @@ import org.example.ctrlu.global.s3.AwsS3Service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -47,7 +44,7 @@ public class CreateTodoServiceTest {
     private UserRepository userRepository;
     private AwsS3Service awsS3Service;
     private TodoService todoService;
-    private FriendShipRepository friendShipRepository;
+    private FriendshipRepository friendshipRepository;
     private RedisTemplate<String, Object> redisTemplate;
 
     private final long userId = 1L;
@@ -69,12 +66,12 @@ public class CreateTodoServiceTest {
         todoRepository = mock(TodoRepository.class);
         userRepository = mock(UserRepository.class);
         awsS3Service = mock(AwsS3Service.class);
-        friendShipRepository = mock(FriendShipRepository.class);
+        friendshipRepository = mock(FriendshipRepository.class);
         redisTemplate = mock(RedisTemplate.class);
         Clock fixedClock = Clock.fixed(
                 LocalDateTime.of(2025, 5, 26, 10, 0).atZone(ZoneId.systemDefault()).toInstant(),
                 ZoneId.systemDefault());
-        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock, redisTemplate);
+        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendshipRepository, fixedClock, redisTemplate);
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(awsS3Service.uploadImage(startImage)).willReturn(uploadedImageUrl);

@@ -3,7 +3,6 @@ package org.example.ctrlu.domain.auth.application;
 import static org.assertj.core.api.Assertions.*;
 
 import org.example.ctrlu.config.TestMySQLConfig;
-import org.example.ctrlu.config.TestRedisConfig;
 import org.example.ctrlu.domain.auth.dto.request.DeleteUserRequest;
 import org.example.ctrlu.domain.auth.dto.request.SigninRequest;
 import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
@@ -50,7 +49,6 @@ public class AuthIntegrationTest {
 	private PasswordEncoder passwordEncoder;
 	private User user;
 	private String refreshToken;
-
 	static final MySQLContainer<?> mySQLContainer = TestMySQLConfig.MYSQL_CONTAINER;
 
 	@Container

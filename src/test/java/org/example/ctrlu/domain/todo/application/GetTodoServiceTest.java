@@ -1,10 +1,9 @@
 package org.example.ctrlu.domain.todo.application;
 
-import org.example.ctrlu.domain.friendship.repository.FriendShipRepository;
+import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
 import org.example.ctrlu.domain.todo.dto.response.GetTodoResponse;
 import org.example.ctrlu.domain.todo.entity.Todo;
 import org.example.ctrlu.domain.todo.entity.TodoStatus;
-import org.example.ctrlu.domain.todo.exception.TodoException;
 import org.example.ctrlu.domain.todo.repository.TodoRepository;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.repository.UserRepository;
@@ -19,7 +18,6 @@ import java.time.*;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.example.ctrlu.domain.todo.exception.TodoErrorCode.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -44,7 +42,7 @@ class GetTodoServiceTest {
     private UserRepository userRepository;
     private AwsS3Service awsS3Service;
     private TodoService todoService;
-    private FriendShipRepository friendShipRepository;
+    private FriendshipRepository friendshipRepository;
     private RedisTemplate<String, Object> redisTemplate;
 
     public static final User user = User.builder()
@@ -65,11 +63,11 @@ class GetTodoServiceTest {
         awsS3Service = mock(AwsS3Service.class);
         redisTemplate = mock(RedisTemplate.class);
 
-        friendShipRepository = mock(FriendShipRepository.class);
+        friendshipRepository = mock(FriendshipRepository.class);
         Clock fixedClock = Clock.fixed(
                 LocalDateTime.of(2025, 5, 26, 10, 0).atZone(ZoneId.systemDefault()).toInstant(),
                 ZoneId.systemDefault());
-        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock, redisTemplate);
+        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendshipRepository, fixedClock, redisTemplate);
 
         todo = Todo.builder()
                 .title(TODO_TITLE)

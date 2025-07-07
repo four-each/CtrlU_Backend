@@ -1,6 +1,6 @@
 package org.example.ctrlu.domain.todo.application;
 
-import org.example.ctrlu.domain.friendship.repository.FriendShipRepository;
+import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
 import org.example.ctrlu.domain.todo.dto.request.CompleteTodoRequest;
 import org.example.ctrlu.domain.todo.entity.Todo;
 import org.example.ctrlu.domain.todo.entity.TodoStatus;
@@ -43,7 +43,7 @@ public class ChangeTodoStatusServiceTest {
     private TodoRepository todoRepository;
     private UserRepository userRepository;
     private AwsS3Service awsS3Service;
-    private FriendShipRepository friendShipRepository;
+    private FriendshipRepository friendshipRepository;
     private RedisTemplate<String, Object> redisTemplate;
 
     private final long userId = 1L;
@@ -57,13 +57,13 @@ public class ChangeTodoStatusServiceTest {
         todoRepository = mock(TodoRepository.class);
         userRepository = mock(UserRepository.class);
         awsS3Service = mock(AwsS3Service.class);
-        friendShipRepository = mock(FriendShipRepository.class);
+        friendshipRepository = mock(FriendshipRepository.class);
         redisTemplate = mock(RedisTemplate.class);
 
         Clock fixedClock = Clock.fixed(
                 LocalDateTime.of(2025, 5, 26, 10, 0).atZone(ZoneId.systemDefault()).toInstant(),
                 ZoneId.systemDefault());
-        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendShipRepository, fixedClock, redisTemplate);
+        todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendshipRepository, fixedClock, redisTemplate);
 
         user = User.builder().nickname("닉네임").email("test@gmail.com").password("pass").build();
         todo = mock(Todo.class);

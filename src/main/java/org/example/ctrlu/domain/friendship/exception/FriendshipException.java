@@ -4,7 +4,7 @@ import org.example.ctrlu.global.exception.BaseException;
 import org.example.ctrlu.global.response.ErrorCode;
 
 public class FriendshipException extends BaseException {
-	public FriendshipException(ErrorCode exceptionStatus) {
+	public FriendshipException(FriendshipErrorCode exceptionStatus) {
 		super(exceptionStatus);
 	}
 }
