@@ -3,10 +3,12 @@ package org.example.ctrlu.domain.friendship.application;
 import static org.example.ctrlu.domain.friendship.exception.FriendshipErrorCode.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import org.example.ctrlu.domain.friendship.dto.request.FriendshipRequest;
+import org.example.ctrlu.domain.friendship.dto.response.GetFriendsResponse;
 import org.example.ctrlu.domain.friendship.entity.Friendship;
 import org.example.ctrlu.domain.friendship.entity.FriendshipStatus;
 import org.example.ctrlu.domain.friendship.exception.FriendshipException;
@@ -125,5 +127,10 @@ public class FriendshipService {
 	@Transactional
 	public Integer deleteExpiredRejections() {
 		return friendshipRepository.deleteByStatusAndRejectedAtBefore(FriendshipStatus.REJECTED, LocalDateTime.now().minusWeeks(1));
+	}
+
+	public GetFriendsResponse getFriends(Long userId) {
+		List<GetFriendsResponse.Friend> friends = friendshipRepository.getFriendsOf(userId);
+		return GetFriendsResponse.from(friends);
 	}
 }

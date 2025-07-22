@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.example.ctrlu.domain.friendship.dto.response.GetFriendsResponse;
 import org.example.ctrlu.domain.friendship.entity.Friendship;
 import org.example.ctrlu.domain.friendship.entity.FriendshipStatus;
 import org.example.ctrlu.domain.user.entity.User;
@@ -42,4 +43,26 @@ public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
     Optional<Friendship> findByIdAndToUserIdAndStatus(Long friendshipId, Long toUserId, FriendshipStatus status);
     Optional<Friendship> findByIdAndFromUserIdAndStatus(Long friendshipId, Long fromUserId, FriendshipStatus status);
     Integer deleteByStatusAndRejectedAtBefore(FriendshipStatus friendshipStatus, LocalDateTime localDateTime);
+
+    @Query("""
+        SELECT NEW org.example.ctrlu.domain.friendship.dto.response.GetFriendsResponse.Friend(
+            CASE
+                WHEN f.fromUser.id = :userId THEN f.toUser.id
+                WHEN f.toUser.id = :userId THEN f.fromUser.id
+            END,
+            CASE
+                WHEN f.fromUser.id = :userId THEN f.toUser.nickname ELSE f.fromUser.nickname
+            END,
+            CASE
+                WHEN f.fromUser.id = :userId THEN f.toUser.email ELSE f.fromUser.email
+            END,
+            CASE
+                WHEN f.fromUser.id = :userId THEN f.toUser.image ELSE f.fromUser.image
+            END
+        )
+        FROM Friendship f
+        WHERE f.status = 'ACCEPTED'
+            AND (f.fromUser.id = :userId OR f.toUser.id = :userId)
+    """)
+	List<GetFriendsResponse.Friend> getFriendsOf(Long userId);
 }

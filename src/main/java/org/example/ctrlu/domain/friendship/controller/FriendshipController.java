@@ -2,9 +2,11 @@ package org.example.ctrlu.domain.friendship.controller;
 
 import org.example.ctrlu.domain.friendship.application.FriendshipService;
 import org.example.ctrlu.domain.friendship.dto.request.FriendshipRequest;
+import org.example.ctrlu.domain.friendship.dto.response.GetFriendsResponse;
 import org.example.ctrlu.global.response.BaseResponse;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -64,5 +66,13 @@ public class FriendshipController {
 	) {
 		friendshipService.cancelFriendship(userId, friendshipId);
 		return new BaseResponse<>(null);
+	}
+
+	@GetMapping
+	public BaseResponse<GetFriendsResponse> getFriends(
+		@AuthenticationPrincipal Long userId
+	) {
+		GetFriendsResponse response = friendshipService.getFriends(userId);
+		return new BaseResponse<>(response);
 	}
 }
