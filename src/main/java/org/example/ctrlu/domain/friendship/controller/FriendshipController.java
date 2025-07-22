@@ -2,7 +2,7 @@ package org.example.ctrlu.domain.friendship.controller;
 
 import org.example.ctrlu.domain.friendship.application.FriendshipService;
 import org.example.ctrlu.domain.friendship.dto.request.FriendshipRequest;
-import org.example.ctrlu.domain.friendship.dto.response.GetFriendsResponse;
+import org.example.ctrlu.domain.friendship.dto.response.GetFriendshipListResponse;
 import org.example.ctrlu.global.response.BaseResponse;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -69,10 +69,26 @@ public class FriendshipController {
 	}
 
 	@GetMapping
-	public BaseResponse<GetFriendsResponse> getFriends(
+	public BaseResponse<GetFriendshipListResponse> getFriends(
 		@AuthenticationPrincipal Long userId
 	) {
-		GetFriendsResponse response = friendshipService.getFriends(userId);
+		GetFriendshipListResponse response = friendshipService.getFriends(userId);
+		return new BaseResponse<>(response);
+	}
+
+	@GetMapping("/received")
+	public BaseResponse<GetFriendshipListResponse> getReceivedRequests(
+		@AuthenticationPrincipal Long userId
+	) {
+		GetFriendshipListResponse response = friendshipService.getReceivedRequests(userId);
+		return new BaseResponse<>(response);
+	}
+
+	@GetMapping("/sent")
+	public BaseResponse<GetFriendshipListResponse> getSentRequests(
+		@AuthenticationPrincipal Long userId
+	) {
+		GetFriendshipListResponse response = friendshipService.getSentRequests(userId);
 		return new BaseResponse<>(response);
 	}
 }

@@ -8,7 +8,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.example.ctrlu.domain.friendship.dto.request.FriendshipRequest;
-import org.example.ctrlu.domain.friendship.dto.response.GetFriendsResponse;
+import org.example.ctrlu.domain.friendship.dto.response.FriendResponse;
+import org.example.ctrlu.domain.friendship.dto.response.GetFriendshipListResponse;
 import org.example.ctrlu.domain.friendship.entity.Friendship;
 import org.example.ctrlu.domain.friendship.entity.FriendshipStatus;
 import org.example.ctrlu.domain.friendship.exception.FriendshipException;
@@ -129,8 +130,18 @@ public class FriendshipService {
 		return friendshipRepository.deleteByStatusAndRejectedAtBefore(FriendshipStatus.REJECTED, LocalDateTime.now().minusWeeks(1));
 	}
 
-	public GetFriendsResponse getFriends(Long userId) {
-		List<GetFriendsResponse.Friend> friends = friendshipRepository.getFriendsOf(userId);
-		return GetFriendsResponse.from(friends);
+	public GetFriendshipListResponse getFriends(Long userId) {
+		List<FriendResponse> friends = friendshipRepository.getFriendsOf(userId);
+		return GetFriendshipListResponse.from(friends);
+	}
+
+	public GetFriendshipListResponse getReceivedRequests(Long userId) {
+		List<FriendResponse> receivedRequests = friendshipRepository.getReceivedRequestsOf(userId);
+		return GetFriendshipListResponse.from(receivedRequests);
+	}
+
+	public GetFriendshipListResponse getSentRequests(Long userId) {
+		List<FriendResponse> sentRequests = friendshipRepository.getSentRequestsOf(userId);
+		return GetFriendshipListResponse.from(sentRequests);
 	}
 }

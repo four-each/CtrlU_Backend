@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.example.ctrlu.domain.friendship.dto.response.GetFriendsResponse;
+import org.example.ctrlu.domain.friendship.dto.response.FriendResponse;
 import org.example.ctrlu.domain.friendship.entity.Friendship;
 import org.example.ctrlu.domain.friendship.entity.FriendshipStatus;
 import org.example.ctrlu.domain.user.entity.User;
@@ -45,7 +45,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
     Integer deleteByStatusAndRejectedAtBefore(FriendshipStatus friendshipStatus, LocalDateTime localDateTime);
 
     @Query("""
-        SELECT NEW org.example.ctrlu.domain.friendship.dto.response.GetFriendsResponse.Friend(
+        SELECT NEW org.example.ctrlu.domain.friendship.dto.response.FriendResponse(
             CASE
                 WHEN f.fromUser.id = :userId THEN f.toUser.id
                 WHEN f.toUser.id = :userId THEN f.fromUser.id
@@ -63,6 +63,29 @@ public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
         FROM Friendship f
         WHERE f.status = 'ACCEPTED'
             AND (f.fromUser.id = :userId OR f.toUser.id = :userId)
+        ORDER BY f.createdAt desc
     """)
-	List<GetFriendsResponse.Friend> getFriendsOf(Long userId);
+	List<FriendResponse> getFriendsOf(Long userId);
+
+    @Query("""
+        SELECT NEW org.example.ctrlu.domain.friendship.dto.response.FriendResponse(
+            f.fromUser.id, f.fromUser.nickname, f.fromUser.email, f.fromUser.image
+        )
+        FROM Friendship f
+        WHERE f.status = 'PENDING'
+            AND f.toUser.id = :userId
+        ORDER BY f.createdAt desc
+    """)
+    List<FriendResponse> getReceivedRequestsOf(Long userId);
+
+    @Query("""
+        SELECT NEW org.example.ctrlu.domain.friendship.dto.response.FriendResponse(
+            f.toUser.id, f.toUser.nickname, f.toUser.email, f.toUser.image
+        )
+        FROM Friendship f
+        WHERE f.status = 'PENDING'
+            AND f.fromUser.id = :userId
+        ORDER BY f.createdAt desc
+    """)
+    List<FriendResponse> getSentRequestsOf(Long userId);
 }
