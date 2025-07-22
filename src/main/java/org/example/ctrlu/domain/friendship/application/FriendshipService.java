@@ -130,16 +130,19 @@ public class FriendshipService {
 		return friendshipRepository.deleteByStatusAndRejectedAtBefore(FriendshipStatus.REJECTED, LocalDateTime.now().minusWeeks(1));
 	}
 
+	@Transactional(readOnly = true)
 	public GetFriendshipListResponse getFriends(Long userId) {
 		List<FriendResponse> friends = friendshipRepository.getFriendsOf(userId);
 		return GetFriendshipListResponse.from(friends);
 	}
 
+	@Transactional(readOnly = true)
 	public GetFriendshipListResponse getReceivedRequests(Long userId) {
 		List<FriendResponse> receivedRequests = friendshipRepository.getReceivedRequestsOf(userId);
 		return GetFriendshipListResponse.from(receivedRequests);
 	}
 
+	@Transactional(readOnly = true)
 	public GetFriendshipListResponse getSentRequests(Long userId) {
 		List<FriendResponse> sentRequests = friendshipRepository.getSentRequestsOf(userId);
 		return GetFriendshipListResponse.from(sentRequests);

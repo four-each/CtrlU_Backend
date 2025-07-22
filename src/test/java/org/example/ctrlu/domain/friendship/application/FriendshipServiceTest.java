@@ -31,9 +31,6 @@ public class FriendshipServiceTest {
 	private FriendshipService friendshipService;
 
 	@Mock
-	private UserRepository userRepository;
-
-	@Mock
 	private FriendshipRepository friendshipRepository;
 
 	private User loginUser;

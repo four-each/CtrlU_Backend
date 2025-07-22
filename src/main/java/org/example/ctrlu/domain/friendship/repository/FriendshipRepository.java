@@ -65,7 +65,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
             AND (f.fromUser.id = :userId OR f.toUser.id = :userId)
         ORDER BY f.createdAt desc
     """)
-	List<FriendResponse> getFriendsOf(Long userId);
+	List<FriendResponse> getFriendsOf(@Param("userId") Long userId);
 
     @Query("""
         SELECT NEW org.example.ctrlu.domain.friendship.dto.response.FriendResponse(
@@ -76,7 +76,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
             AND f.toUser.id = :userId
         ORDER BY f.createdAt desc
     """)
-    List<FriendResponse> getReceivedRequestsOf(Long userId);
+    List<FriendResponse> getReceivedRequestsOf(@Param("userId") Long userId);
 
     @Query("""
         SELECT NEW org.example.ctrlu.domain.friendship.dto.response.FriendResponse(
@@ -87,5 +87,5 @@ public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
             AND f.fromUser.id = :userId
         ORDER BY f.createdAt desc
     """)
-    List<FriendResponse> getSentRequestsOf(Long userId);
+    List<FriendResponse> getSentRequestsOf(@Param("userId") Long userId);
 }
