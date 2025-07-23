@@ -14,7 +14,6 @@ import org.example.ctrlu.domain.friendship.exception.FriendshipException;
 import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.entity.UserStatus;
-import org.example.ctrlu.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

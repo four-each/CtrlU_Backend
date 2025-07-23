@@ -4,6 +4,8 @@ import java.util.Optional;
 
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.entity.UserStatus;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,4 +18,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	@Query("SELECT u.image FROM User u WHERE u.id = :id")
     String getImageById(@Param("id") Long id);
+
+	@Query("""
+    	SELECT u FROM User u
+    	WHERE LOWER(u.email) LIKE CONCAT(:keyword, '%@%')
+    	ORDER BY u.id ASC
+    """)
+	Slice<User> findByEmailStartsWithFirstPage(@Param("keyword") String keyword, Pageable pageable);
+
+	@Query("""
+    	SELECT u FROM User u
+    	WHERE u.id > :cursorId AND LOWER(u.email) LIKE CONCAT(:keyword, '%@%')
+    	ORDER BY u.id ASC
+    """)
+	Slice<User> findByEmailStartsWithNextPage(@Param("keyword") String keyword, @Param("cursorId") Long cursorId, Pageable pageable);
 }
