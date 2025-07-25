@@ -81,7 +81,7 @@ class AuthServiceTest {
 
 		// then
 		verify(userRepository).save(any(User.class));
-		verify(mailService).sendEmail(any(User.class));
+		verify(mailService).sendVerifyEmail(any(User.class));
 	}
 
 	@Test
@@ -137,7 +137,7 @@ class AuthServiceTest {
 		assertEquals(signupRequest.nickname(), user.getNickname());
 		assertEquals(IMAGE_URL, user.getImage());
 		assertEquals(VERIFY_TOKEN, user.getVerifyToken());
-		verify(mailService).sendEmail(user);
+		verify(mailService).sendVerifyEmail(user);
 	}
 
 	@Test
@@ -161,7 +161,7 @@ class AuthServiceTest {
 		assertEquals(signupRequest.nickname(), user.getNickname());
 		assertEquals(IMAGE_URL, user.getImage());
 		assertEquals(VERIFY_TOKEN, user.getVerifyToken());
-		verify(mailService).sendEmail(user);
+		verify(mailService).sendVerifyEmail(user);
 	}
 
 	@Test

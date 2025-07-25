@@ -62,7 +62,9 @@ spring:
     username: ${EMAIL_USERNAME}
     password: ${EMAIL_APP_PASSWORD}
     host: ${EMAIL_HOST}
-    request-uri: ${EMAIL_REQUEST_URI}
+    request-uri:
+      verify: ${EMAIL_REQUEST_URI_VERIFY}
+      reset-password: ${EMAIL_REQUEST_URI_RESET_PASSWORD}
     default-encoding: UTF-8
     properties:
       mail:
@@ -115,7 +117,9 @@ spring:
     username: ${EMAIL_USERNAME}
     password: ${EMAIL_APP_PASSWORD}
     host: ${EMAIL_HOST}
-    request-uri: ${EMAIL_REQUEST_URI}
+    request-uri:
+      verify: ${EMAIL_REQUEST_URI_VERIFY}
+      reset-password: ${EMAIL_REQUEST_URI_RESET_PASSWORD}
     default-encoding: UTF-8
     properties:
       mail:

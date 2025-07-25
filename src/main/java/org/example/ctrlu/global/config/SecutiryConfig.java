@@ -41,7 +41,12 @@ public class SecutiryConfig {
 			.sessionManagement(session
 				-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/auth/signup", "/auth/signin", "/auth/reissue", "/auth/verify").permitAll()
+				.requestMatchers("/auth/signup",
+					"/auth/signin",
+					"/auth/reissue",
+					"/auth/verify",
+					"/auth/find-password",
+					"/auth/reset-password").permitAll()
 				.requestMatchers("/auth/logout", "/auth/withdraw").authenticated()
 				.anyRequest().authenticated()
 			)

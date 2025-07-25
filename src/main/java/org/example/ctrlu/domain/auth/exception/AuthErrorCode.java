@@ -17,7 +17,8 @@ public enum AuthErrorCode implements ErrorCode {
 	NOT_FOUND_REFRESHTOKEN_IN_REDIS(HttpStatus.UNAUTHORIZED.value(), "A006", "Redis에 RefreshToken이 존재하지 않습니다."),
 	NOT_FOUND_USER(HttpStatus.NOT_FOUND.value(),"A007","존재하지 않는 사용자입니다."),
 	NOT_FOUND_REFRESHTOKEN_IN_COOKIE(HttpStatus.UNAUTHORIZED.value(),"A008","쿠키에 RefreshToken이 존재하지 않습니다."),
-	INVALID_REFRESHTOKEN(HttpStatus.UNAUTHORIZED.value(),"A009","유효하지 않은 RefreshToken입니다.");
+	INVALID_REFRESHTOKEN(HttpStatus.UNAUTHORIZED.value(),"A009","유효하지 않은 RefreshToken입니다."),
+	EXPIRED_VERIFYTOKEN(HttpStatus.UNAUTHORIZED.value(), "A010", "VerifyToken 유효 기간이 만료되었습니다.");
 
 	private final int status;
 	private final String code;

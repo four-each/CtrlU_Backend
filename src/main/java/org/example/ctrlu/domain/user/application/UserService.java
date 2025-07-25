@@ -53,6 +53,7 @@ public class UserService {
 		user.updateProfile(request.nickname(), imageUrl);
 	}
 
+	@Transactional(readOnly = true)
 	public CursorResult<SearchUsersResponse> searchUsersByEmail(String keyword, Long cursorId, int size) {
 		if (!StringUtils.hasText(keyword) || keyword.trim().length() < 2) {
 			return new CursorResult<>(Collections.emptyList(), false, null);
