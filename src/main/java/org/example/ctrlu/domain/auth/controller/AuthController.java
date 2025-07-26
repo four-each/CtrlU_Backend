@@ -2,6 +2,8 @@ package org.example.ctrlu.domain.auth.controller;
 
 import org.example.ctrlu.domain.auth.application.AuthService;
 import org.example.ctrlu.domain.auth.dto.request.DeleteUserRequest;
+import org.example.ctrlu.domain.auth.dto.request.FindPasswordRequest;
+import org.example.ctrlu.domain.auth.dto.request.ResetPasswordRequest;
 import org.example.ctrlu.domain.auth.dto.request.SigninRequest;
 import org.example.ctrlu.domain.auth.dto.request.SignupRequest;
 import org.example.ctrlu.domain.auth.dto.response.SigninResponse;
@@ -9,6 +11,7 @@ import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
 import org.example.ctrlu.global.response.BaseResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,6 +37,7 @@ public class AuthController {
 	private final AuthService authService;
 	private static final String LOGIN_URL = "http://ctrlu.site/login";
 	private static final String ERROR_URL = "http://ctrlu.site/error";
+	private static final String RESET_PASSWORD_URL = "http://ctrlu.site/reset-password";
 	private static final String COOKIE_REFRESHTOKEN = "refreshToken=";
 	private static final String COOKIE_NAME_REFRESHTOKEN = "refreshToken";
 	private static final String COOKIE_FLAGS = "; Path=/; HttpOnly; Secure; ";
@@ -118,5 +122,28 @@ public class AuthController {
 		response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
 		response.setHeader("Pragma", "no-cache");
 		response.setHeader("Expires", "0");
+	}
+
+	@PostMapping("/find-password")
+	public BaseResponse<Void> findPassword(@Valid @RequestBody FindPasswordRequest request) {
+		authService.findPassword(request);
+		return new BaseResponse<>(null);
+	}
+
+	@GetMapping("/reset-password")
+	public Object verifyResetToken(@RequestParam("token") String token) {
+		boolean isComplete = authService.verifyResetToken(token);
+
+		if (isComplete) {
+			return new RedirectView(RESET_PASSWORD_URL);
+		} else {
+			return new RedirectView(ERROR_URL);  // 링크 만료 페이지로 이동
+		}
+	}
+
+	@PostMapping("/reset-password")
+	public BaseResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+		authService.resetPassword(request);
+		return new BaseResponse<>(null);
 	}
 }

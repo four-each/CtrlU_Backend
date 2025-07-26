@@ -2,7 +2,9 @@ package org.example.ctrlu.global.security;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,7 +29,18 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 	private static final String AUTHORIZATION = "Authorization";
 	private static final String AUTHORIZATION_PREFIX = "Bearer ";
 	private static final String SPLIT_REGEX = " ";
-	public static final String[] WHITE_LIST = {"/auth/signup", "/auth/signin", "/auth/reissue", "/auth/verify"};
+	public static final String[] WHITE_LIST = {
+		"/auth/signup",
+		"/auth/signin",
+		"/auth/reissue",
+		"/auth/verify",
+		"/auth/find-password",
+		"/auth/reset-password"
+	};
+	private static final Set<String> EXCLUDE_PATHS = new HashSet<>(Arrays.asList(
+		"/error",
+		"/favicon.ico"
+	));
 
 	public JwtFilter(AuthenticationManager authenticationManager) {
 		super(new AntPathRequestMatcher("/**"));
@@ -40,6 +53,7 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) request;
 		HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
+
 		if (isWhiteListed(httpServletRequest)) {
 			chain.doFilter(httpServletRequest, httpServletResponse);  // 인증 x
 			return;
@@ -51,7 +65,7 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 
 	private boolean isWhiteListed(HttpServletRequest request) {
 		String requestUri = request.getRequestURI();
-		return Arrays.asList(WHITE_LIST).contains(requestUri);
+		return Arrays.asList(WHITE_LIST).contains(requestUri) || EXCLUDE_PATHS.contains(requestUri);
 	}
 
 	@Override
@@ -59,6 +73,7 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 		AuthenticationException, IOException {
 		String authHeader = request.getHeader(AUTHORIZATION);
 		if (authHeader == null || !authHeader.startsWith(AUTHORIZATION_PREFIX)) {
+			log.info(request.getRequestURI());
 			setErrorResponse(response, "JWT 토큰이 없거나 Bearer 형식에 맞지 않습니다.");
 			return null;
 		}
@@ -79,6 +94,7 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 	@Override
 	protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
 		AuthenticationException failed) throws IOException {
+		log.info(failed.getMessage());
 		setErrorResponse(response, failed.getMessage());
 	}
 

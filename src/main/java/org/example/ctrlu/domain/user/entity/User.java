@@ -74,4 +74,7 @@ public class User extends BaseEntity {
 		this.image = image;
 	}
 
+	public void updateVerifyToken(String verifyToken) {
+		this.verifyToken = verifyToken;
+	}
 }

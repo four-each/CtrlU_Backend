@@ -5,6 +5,8 @@ import static org.example.ctrlu.domain.auth.exception.AuthErrorCode.*;
 import java.util.Optional;
 
 import org.example.ctrlu.domain.auth.dto.request.DeleteUserRequest;
+import org.example.ctrlu.domain.auth.dto.request.FindPasswordRequest;
+import org.example.ctrlu.domain.auth.dto.request.ResetPasswordRequest;
 import org.example.ctrlu.domain.auth.dto.request.SigninRequest;
 import org.example.ctrlu.domain.auth.dto.request.SignupRequest;
 import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
@@ -68,7 +70,7 @@ public class AuthService {
 		String imageUrl = awsS3Service.uploadImage(file);
 		String encodedPassword = passwordEncoder.encode(signupRequest.password());
 		user.restore(encodedPassword, signupRequest.nickname(), imageUrl, jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME));
-		mailService.sendEmail(user);
+		mailService.sendVerifyEmail(user);
 	}
 
 	private void createNewUser(SignupRequest request, MultipartFile file) {
@@ -84,7 +86,7 @@ public class AuthService {
 			.build();
 
 		userRepository.save(newUser);
-		mailService.sendEmail(newUser);
+		mailService.sendVerifyEmail(newUser);
 	}
 
 	@Transactional
@@ -97,6 +99,7 @@ public class AuthService {
 			.orElseThrow(() -> new AuthException(NOT_FOUND_USER));
 
 		user.changeUserStatusToActive();
+		user.updateVerifyToken("");
 		return true;
 	}
 
@@ -161,5 +164,39 @@ public class AuthService {
 
 		logout(refreshTokenCookie);
 		user.softdelete();
+	}
+
+	@Transactional
+	public void findPassword(FindPasswordRequest request) {
+		User user = userRepository.findByEmailAndStatus(request.email(), UserStatus.ACTIVE)
+			.orElseThrow(() -> new AuthException(NOT_FOUND_USER));
+
+		user.updateVerifyToken(jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME));
+		mailService.sendFindPasswordEmail(user);
+	}
+
+	@Transactional(readOnly = true)
+	public boolean verifyResetToken(String token) {
+		if (jwtUtil.isExpired(token)) {
+			return false;
+		}
+
+		userRepository.findByVerifyTokenAndStatus(token, UserStatus.ACTIVE)
+			.orElseThrow(() -> new AuthException(NOT_FOUND_USER));
+
+		return true;
+	}
+
+	@Transactional
+	public void resetPassword(ResetPasswordRequest request) {
+		if (jwtUtil.isExpired(request.verifyToken())) {
+			throw new AuthException(EXPIRED_VERIFYTOKEN);
+		}
+
+		User user = userRepository.findByVerifyTokenAndStatus(request.verifyToken(), UserStatus.ACTIVE)
+			.orElseThrow(() -> new AuthException(NOT_FOUND_USER));
+
+		user.updatePassword(passwordEncoder.encode(request.password()));
+		user.updateVerifyToken("");
 	}
 }
