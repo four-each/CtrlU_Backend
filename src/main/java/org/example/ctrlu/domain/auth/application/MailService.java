@@ -8,6 +8,7 @@ import org.example.ctrlu.domain.auth.exception.AuthException;
 import org.example.ctrlu.domain.user.entity.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import jakarta.mail.MessagingException;
@@ -118,11 +119,13 @@ public class MailService {
 
 	private final JavaMailSender mailSender;
 
+	@Async
 	public void sendVerifyEmail(User user) {
 		String mailBody = VERIFY_EMAIL_BODY.formatted(verifyRequestUri + user.getVerifyToken());
 		sendEmail(user.getEmail(), EMAIL_CERTIFICATION_SUBJECT, mailBody);
 	}
 
+	@Async
 	public void sendFindPasswordEmail(User user) {
 		String mailBody = FIND_PASSWORD_BODY.formatted(resetPasswordRequestUri + user.getVerifyToken());
 		sendEmail(user.getEmail(), FIND_PASSWORD_SUBJECT, mailBody);
