@@ -9,6 +9,6 @@ public record SearchUsersResponse(
 	String image
 ) {
 	public static SearchUsersResponse from(User user) {
-		return new SearchUsersResponse(user.getId(), user.getNickname(), user.getEmail(), user.getImage());
+		return new SearchUsersResponse(user.getId(), user.getNickname(), user.getEmail(), user.getProfileImageKey());
 	}
 }

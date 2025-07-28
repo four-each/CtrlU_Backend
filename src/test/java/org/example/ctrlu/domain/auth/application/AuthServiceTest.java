@@ -135,7 +135,7 @@ class AuthServiceTest {
 		// then
 		assertEquals(ENCODED_PASSWORD, user.getPassword());
 		assertEquals(signupRequest.nickname(), user.getNickname());
-		assertEquals(IMAGE_URL, user.getImage());
+		assertEquals(IMAGE_URL, user.getProfileImageKey());
 		assertEquals(VERIFY_TOKEN, user.getVerifyToken());
 		verify(mailService).sendVerifyEmail(user);
 	}
@@ -159,7 +159,7 @@ class AuthServiceTest {
 		// then
 		assertEquals(ENCODED_PASSWORD, user.getPassword());
 		assertEquals(signupRequest.nickname(), user.getNickname());
-		assertEquals(IMAGE_URL, user.getImage());
+		assertEquals(IMAGE_URL, user.getProfileImageKey());
 		assertEquals(VERIFY_TOKEN, user.getVerifyToken());
 		verify(mailService).sendVerifyEmail(user);
 	}

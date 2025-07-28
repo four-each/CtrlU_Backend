@@ -48,7 +48,7 @@ public class UserService {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new UserException(NOT_FOUND_USER));
 
-		awsS3Service.deleteImage(user.getImage());
+		awsS3Service.deleteImage(user.getProfileImageKey());
 		String imageUrl = awsS3Service.uploadImage(userImage);
 		user.updateProfile(request.nickname(), imageUrl);
 	}

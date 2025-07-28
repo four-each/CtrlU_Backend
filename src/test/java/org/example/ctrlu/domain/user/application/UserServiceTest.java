@@ -46,7 +46,7 @@ class UserServiceTest {
 			.email("test@test.com")
 			.password("encodedOldPassword")
 			.nickname("nickname")
-			.image("oldImageUrl")
+			.profileImageKey("oldImageUrl")
 			.verifyToken("verifytoken")
 			.build();
 		user.changeUserStatusToActive();
@@ -100,7 +100,7 @@ class UserServiceTest {
 
 		// then
 		assertThat("newNickname").isEqualTo(user.getNickname());
-		assertThat("newImageUrl").isEqualTo(user.getImage());
+		assertThat("newImageUrl").isEqualTo(user.getProfileImageKey());
 	}
 
 }

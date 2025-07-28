@@ -57,7 +57,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
                 WHEN f.fromUser.id = :userId THEN f.toUser.email ELSE f.fromUser.email
             END,
             CASE
-                WHEN f.fromUser.id = :userId THEN f.toUser.image ELSE f.fromUser.image
+                WHEN f.fromUser.id = :userId THEN f.toUser.profileImageKey ELSE f.fromUser.profileImageKey
             END
         )
         FROM Friendship f
@@ -69,7 +69,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
 
     @Query("""
         SELECT NEW org.example.ctrlu.domain.friendship.dto.response.FriendResponse(
-            f.fromUser.id, f.fromUser.nickname, f.fromUser.email, f.fromUser.image
+            f.fromUser.id, f.fromUser.nickname, f.fromUser.email, f.fromUser.profileImageKey
         )
         FROM Friendship f
         WHERE f.status = 'PENDING'
@@ -80,7 +80,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
 
     @Query("""
         SELECT NEW org.example.ctrlu.domain.friendship.dto.response.FriendResponse(
-            f.toUser.id, f.toUser.nickname, f.toUser.email, f.toUser.image
+            f.toUser.id, f.toUser.nickname, f.toUser.email, f.toUser.profileImageKey
         )
         FROM Friendship f
         WHERE f.status = 'PENDING'

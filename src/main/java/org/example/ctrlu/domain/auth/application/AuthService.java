@@ -17,6 +17,7 @@ import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.entity.UserStatus;
 import org.example.ctrlu.domain.user.repository.UserRepository;
 import org.example.ctrlu.global.s3.AwsS3Service;
+import org.example.ctrlu.global.s3.PresignedUrl;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,21 +68,21 @@ public class AuthService {
 	}
 
 	private void restoreAndSendEmail(SignupRequest signupRequest, MultipartFile file, User user) {
-		String imageUrl = awsS3Service.uploadImage(file);
+		String presignedUrl = awsS3Service.uploadImage(file);
 		String encodedPassword = passwordEncoder.encode(signupRequest.password());
-		user.restore(encodedPassword, signupRequest.nickname(), imageUrl, jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME));
+		user.restore(encodedPassword, signupRequest.nickname(), presignedUrl, jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME));
 		mailService.sendVerifyEmail(user);
 	}
 
 	private void createNewUser(SignupRequest request, MultipartFile file) {
-		String imageUrl = awsS3Service.uploadImage(file);
+		String presignedUrl = awsS3Service.uploadImage(file);
 		String encodedPassword = passwordEncoder.encode(request.password());
 
 		User newUser = User.builder()
 			.email(request.email())
 			.password(encodedPassword)
 			.nickname(request.nickname())
-			.image(imageUrl)
+			.profileImageKey(presignedUrl)
 			.verifyToken(jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME))
 			.build();
 

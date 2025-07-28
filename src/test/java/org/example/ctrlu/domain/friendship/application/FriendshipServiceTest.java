@@ -42,7 +42,7 @@ public class FriendshipServiceTest {
 			.nickname("loginUser")
 			.email("test@test.com")
 			.password("password")
-			.image("image")
+			.profileImageKey("image")
 			.build();
 		ReflectionTestUtils.setField(loginUser, "id", 1L);
 		ReflectionTestUtils.setField(loginUser, "status", UserStatus.ACTIVE);
@@ -51,7 +51,7 @@ public class FriendshipServiceTest {
 			.nickname("targetUser")
 			.email("test@test.com")
 			.password("password")
-			.image("image")
+			.profileImageKey("image")
 			.build();
 		ReflectionTestUtils.setField(targetUser, "id", 2L);
 		ReflectionTestUtils.setField(targetUser, "status", UserStatus.ACTIVE);
