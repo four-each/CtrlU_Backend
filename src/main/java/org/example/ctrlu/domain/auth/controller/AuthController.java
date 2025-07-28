@@ -3,24 +3,25 @@ package org.example.ctrlu.domain.auth.controller;
 import org.example.ctrlu.domain.auth.application.AuthService;
 import org.example.ctrlu.domain.auth.dto.request.DeleteUserRequest;
 import org.example.ctrlu.domain.auth.dto.request.FindPasswordRequest;
+import org.example.ctrlu.domain.auth.dto.request.GetPresignedUrlRequest;
 import org.example.ctrlu.domain.auth.dto.request.ResetPasswordRequest;
 import org.example.ctrlu.domain.auth.dto.request.SigninRequest;
 import org.example.ctrlu.domain.auth.dto.request.SignupRequest;
+import org.example.ctrlu.domain.auth.dto.response.PresignedUrlResponse;
 import org.example.ctrlu.domain.auth.dto.response.SigninResponse;
 import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
 import org.example.ctrlu.global.response.BaseResponse;
+import org.example.ctrlu.global.s3.AwsS3Service;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.web.util.WebUtils;
 
@@ -35,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/auth")
 public class AuthController {
 	private final AuthService authService;
+	private final AwsS3Service awsS3Service;
 	private static final String LOGIN_URL = "http://ctrlu.site/login";
 	private static final String ERROR_URL = "http://ctrlu.site/error";
 	private static final String RESET_PASSWORD_URL = "http://ctrlu.site/reset-password";
@@ -45,12 +47,17 @@ public class AuthController {
 	private static final Long REFRESHTOKEN_EXPIRATION_TIME = 60 * 60 * 24 * 7L; // 7일
 	private static final String COOKIE_SAMESITE = "; SameSite=None";
 
+	@PostMapping("/presigned-url")
+	public ResponseEntity<PresignedUrlResponse> getPresignedUrl(@RequestBody @Valid GetPresignedUrlRequest request) {
+		PresignedUrlResponse response = awsS3Service.generatePresignedUrl(request);
+		return ResponseEntity.ok(response);
+	}
+
 	@PostMapping("/signup")
 	public BaseResponse<Void> signup(
-		@RequestPart("request") @Valid SignupRequest request,
-		@RequestPart("userImage") MultipartFile userImage
+		@RequestBody @Valid SignupRequest request
 	) {
-		authService.signup(request, userImage);
+		authService.signup(request);
 		return new BaseResponse<>(null);
 	}
 

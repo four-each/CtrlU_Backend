@@ -46,7 +46,8 @@ public class SecutiryConfig {
 					"/auth/reissue",
 					"/auth/verify",
 					"/auth/find-password",
-					"/auth/reset-password").permitAll()
+					"/auth/reset-password",
+					"/auth/presigned-url").permitAll()
 				.requestMatchers("/auth/logout", "/auth/withdraw").authenticated()
 				.anyRequest().authenticated()
 			)

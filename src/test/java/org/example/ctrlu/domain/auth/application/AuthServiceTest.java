@@ -63,7 +63,7 @@ class AuthServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		signupRequest = new SignupRequest("email@gmail.com", "password", "nickname");
+		signupRequest = new SignupRequest("email@gmail.com", "password", "nickname", ".jpg");
 		signinRequest = new SigninRequest("test@email.com", "password123");
 	}
 
@@ -72,12 +72,11 @@ class AuthServiceTest {
 	void signup_ShouldCreateNewUser_WhenEmailNotExists() {
 		// given
 		when(userRepository.findByEmail(signupRequest.email())).thenReturn(Optional.empty());
-		when(awsS3Service.uploadImage(file)).thenReturn(IMAGE_URL);
 		when(passwordEncoder.encode(signupRequest.password())).thenReturn(ENCODED_PASSWORD);
 		when(jwtUtil.createVerifyToken(EXPIRATION_TIME)).thenReturn(VERIFY_TOKEN);
 
 		// when
-		authService.signup(signupRequest, file);
+		authService.signup(signupRequest);
 
 		// then
 		verify(userRepository).save(any(User.class));
@@ -94,7 +93,7 @@ class AuthServiceTest {
 
 		// when / then
 		AuthException authException =
-			assertThrows(AuthException.class, () -> authService.signup(signupRequest, file));
+			assertThrows(AuthException.class, () -> authService.signup(signupRequest));
 		assertEquals(ALREADY_EXIST_EMAIL, authException.getExceptionStatus());
 	}
 
@@ -111,7 +110,7 @@ class AuthServiceTest {
 
 		// when / then
 		AuthException authException =
-			assertThrows(AuthException.class, () -> authService.signup(signupRequest, file));
+			assertThrows(AuthException.class, () -> authService.signup(signupRequest));
 		assertEquals(TRY_EMAIL_VERIFICATION, authException.getExceptionStatus());
 	}
 
@@ -125,17 +124,16 @@ class AuthServiceTest {
 
 		when(userRepository.findByEmail(signupRequest.email())).thenReturn(Optional.of(user));
 		when(jwtUtil.isExpired(EXPIRED_TOKEN)).thenReturn(true);
-		when(awsS3Service.uploadImage(file)).thenReturn(IMAGE_URL);
 		when(passwordEncoder.encode(signupRequest.password())).thenReturn(ENCODED_PASSWORD);
 		when(jwtUtil.createVerifyToken(EXPIRATION_TIME)).thenReturn(VERIFY_TOKEN);
 
 		// when
-		authService.signup(signupRequest, file);
+		authService.signup(signupRequest);
 
 		// then
 		assertEquals(ENCODED_PASSWORD, user.getPassword());
 		assertEquals(signupRequest.nickname(), user.getNickname());
-		assertEquals(IMAGE_URL, user.getProfileImageKey());
+		assertEquals(signupRequest.profileImageKey(), user.getProfileImageKey());
 		assertEquals(VERIFY_TOKEN, user.getVerifyToken());
 		verify(mailService).sendVerifyEmail(user);
 	}
@@ -149,17 +147,15 @@ class AuthServiceTest {
 		ReflectionTestUtils.setField(user, "verifyToken", EXPIRED_TOKEN);
 
 		when(userRepository.findByEmail(signupRequest.email())).thenReturn(Optional.of(user));
-		when(awsS3Service.uploadImage(file)).thenReturn(IMAGE_URL);
 		when(passwordEncoder.encode(signupRequest.password())).thenReturn(ENCODED_PASSWORD);
 		when(jwtUtil.createVerifyToken(EXPIRATION_TIME)).thenReturn(VERIFY_TOKEN);
 
 		// when
-		authService.signup(signupRequest, file);
+		authService.signup(signupRequest);
 
 		// then
 		assertEquals(ENCODED_PASSWORD, user.getPassword());
 		assertEquals(signupRequest.nickname(), user.getNickname());
-		assertEquals(IMAGE_URL, user.getProfileImageKey());
 		assertEquals(VERIFY_TOKEN, user.getVerifyToken());
 		verify(mailService).sendVerifyEmail(user);
 	}

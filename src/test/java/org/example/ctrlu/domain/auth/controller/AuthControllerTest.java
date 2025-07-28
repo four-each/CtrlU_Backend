@@ -23,6 +23,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
@@ -68,28 +69,13 @@ class AuthControllerTest {
 	@DisplayName("회원가입에 성공한다.")
 	void signup_success() throws Exception {
 		// given
-		SignupRequest request = new SignupRequest("test1@example.com", "password1235", "tester");
+		SignupRequest request = new SignupRequest("test1@example.com", "password1235", "tester", ".jpg");
 		String requestJson = objectMapper.writeValueAsString(request);
 
-		MockMultipartFile imageFile = new MockMultipartFile(
-			"request",
-			"request.json",
-			"application/json",
-			requestJson.getBytes(StandardCharsets.UTF_8)
-		);
-
-		MockMultipartFile jsonPart = new MockMultipartFile(
-			"userImage",
-			"profile.png",
-			"image/png",
-			"fake image content".getBytes()
-		);
-
 		// when & then
-		mockMvc.perform(multipart("/auth/signup")
-				.file(jsonPart)
-				.file(imageFile)
-				.contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+		mockMvc.perform(post("/auth/signup")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestJson))
 			.andExpect(status().isOk());
 	}
 

@@ -3,12 +3,11 @@ package org.example.ctrlu.global.s3;
 import java.time.Duration;
 import java.util.UUID;
 
+import org.example.ctrlu.domain.auth.dto.request.GetPresignedUrlRequest;
+import org.example.ctrlu.domain.auth.dto.response.PresignedUrlResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-
 
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -25,6 +24,23 @@ public class AwsS3Service {
 
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName;
+
+	public PresignedUrlResponse generatePresignedUrl(GetPresignedUrlRequest request) {
+		String fileName = request.imageType().getPath() + "/" + UUID.randomUUID() + request.fileExtension();
+
+		PutObjectRequest objectRequest = PutObjectRequest.builder()
+			.bucket(bucketName)
+			.key(fileName)
+			.build();
+
+		PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+			.signatureDuration(Duration.ofMinutes(10))
+			.putObjectRequest(objectRequest)
+			.build();
+
+		PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
+		return new PresignedUrlResponse(presignedRequest.url().toString(), fileName);
+	}
 
 	public String uploadImage(MultipartFile image) {
 		if (image == null || image.isEmpty()) {
@@ -53,19 +69,5 @@ public class AwsS3Service {
 	private String getPublicUrl(String fileName){
 		// return amazonS3.getUrl(bucket, fileName).toString();
 		return "";
-	}
-
-	// 파일명을 난수화하기 위해 UUID를 활용하여 난수를 돌린다.
-	private String createFileName(String fileName){
-		return UUID.randomUUID().toString().concat(getFileExtension(fileName));
-	}
-
-	//  "."의 존재 유무만 판단
-	private String getFileExtension(String fileName){
-		try{
-			return fileName.substring(fileName.lastIndexOf("."));
-		} catch (StringIndexOutOfBoundsException e){
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 형식의 파일" + fileName + ") 입니다.");
-		}
 	}
 }
