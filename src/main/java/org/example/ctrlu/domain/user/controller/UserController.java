@@ -40,10 +40,9 @@ public class UserController {
 	@PatchMapping("/profile")
 	public BaseResponse<Void> updateProfile(
 		@AuthenticationPrincipal Long userId,
-		@RequestPart("request") @Valid UpdateProfileRequest request,
-		@RequestPart("userImage") MultipartFile userImage
+		@RequestBody @Valid UpdateProfileRequest request
 	) {
-		userService.updateProfile(userId, request, userImage);
+		userService.updateProfile(userId, request);
 		return new BaseResponse<>(null);
 	}
 

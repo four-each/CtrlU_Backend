@@ -42,26 +42,6 @@ public class AwsS3Service {
 		return new PresignedUrlResponse(presignedRequest.url().toString(), fileName);
 	}
 
-	public String uploadImage(MultipartFile image) {
-		if (image == null || image.isEmpty()) {
-			return null;
-		}
-		String imageKey = "profiles/" + UUID.randomUUID() + image;
-
-		PutObjectRequest objectRequest = PutObjectRequest.builder()
-			.bucket(bucketName)
-			.key(imageKey)
-			.build();
-
-		PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-			.signatureDuration(Duration.ofMinutes(5))
-			.putObjectRequest(objectRequest)
-			.build();
-
-		PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
-		return "";
-	}
-
 	public void deleteImage(String fileName){
 		// amazonS3.deleteObject(new DeleteObjectRequest(bucket, fileName));
 	}

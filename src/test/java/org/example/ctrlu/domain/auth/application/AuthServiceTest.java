@@ -35,7 +35,6 @@ class AuthServiceTest {
 	public static final String VERIFY_TOKEN = "verify_token";
 	public static final String EXPIRED_TOKEN = "expired_token";
 	public static final String ENCODED_PASSWORD = "encoded_password";
-	public static final String IMAGE_URL = "http://s3.com/image.png";
 	public static final String REFRESH_TOKEN = "valid_refreshtoken";
 	private static final Long EXPIRATION_TIME = 300000L;
 	private static final Long ACCESSTOKEN_EXPIRATION_TIME = (60 * 1000L) * 30; // 30분
@@ -63,7 +62,7 @@ class AuthServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		signupRequest = new SignupRequest("email@gmail.com", "password", "nickname", ".jpg");
+		signupRequest = new SignupRequest("email@gmail.com", "password", "nickname", "profile/123.jpg");
 		signinRequest = new SigninRequest("test@email.com", "password123");
 	}
 

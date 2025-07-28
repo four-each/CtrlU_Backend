@@ -44,13 +44,12 @@ public class UserService {
 	}
 
 	@Transactional
-	public void updateProfile(Long userId, UpdateProfileRequest request, MultipartFile userImage) {
+	public void updateProfile(Long userId, UpdateProfileRequest request) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new UserException(NOT_FOUND_USER));
 
 		awsS3Service.deleteImage(user.getProfileImageKey());
-		String imageUrl = awsS3Service.uploadImage(userImage);
-		user.updateProfile(request.nickname(), imageUrl);
+		user.updateProfile(request.nickname(), request.profileImageKey());
 	}
 
 	@Transactional(readOnly = true)
