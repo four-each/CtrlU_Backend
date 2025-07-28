@@ -50,8 +50,7 @@ public class CreateTodoServiceTest {
     private final long userId = 1L;
     private final String title = "할 일 제목";
     private final LocalTime challengeTime = LocalTime.of(9, 30);
-    private final String uploadedImageUrl = "https://s3-bucket/test-image.png";
-    private final MockMultipartFile startImage = new MockMultipartFile("startImage", "image.png", "image/png", "fake-image".getBytes());
+    private final String startImage = "startImage/123.png";
 
     private final User user = User.builder()
             .nickname("닉네임")
@@ -59,7 +58,7 @@ public class CreateTodoServiceTest {
             .password("password")
             .build();
 
-    private final CreateTodoRequest request = new CreateTodoRequest(title, challengeTime);
+    private final CreateTodoRequest request = new CreateTodoRequest(title, challengeTime, startImage);
 
     @BeforeEach
     void setUp() {
@@ -74,7 +73,6 @@ public class CreateTodoServiceTest {
         todoService = new TodoService(todoRepository, userRepository, awsS3Service, friendshipRepository, fixedClock, redisTemplate);
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
-        given(awsS3Service.uploadImage(startImage)).willReturn(uploadedImageUrl);
     }
 
     @DisplayName("할 일 생성 성공 - 진행 중인 할 일이 없을 때")
@@ -89,7 +87,7 @@ public class CreateTodoServiceTest {
         given(todoRepository.save(any(Todo.class))).willReturn(savedTodo);
 
         // when
-        CreateTodoResponse response = todoService.createTodo(userId, request, startImage);
+        CreateTodoResponse response = todoService.createTodo(userId, request);
 
         // then
         assertThat(response.todoId()).isEqualTo(42L);
@@ -104,7 +102,7 @@ public class CreateTodoServiceTest {
                 .willReturn(List.of(inProgressTodo));
 
         // when & then
-        TodoException exception = assertThrows(TodoException.class, () -> todoService.createTodo(userId, request, startImage));
+        TodoException exception = assertThrows(TodoException.class, () -> todoService.createTodo(userId, request));
 
         assertThat(exception.getExceptionStatus()).isEqualTo(ALREADY_EXIST_IN_PROGRESS_TODO);
     }

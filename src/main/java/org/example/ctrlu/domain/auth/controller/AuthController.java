@@ -49,7 +49,7 @@ public class AuthController {
 
 	@PostMapping("/presigned-url")
 	public ResponseEntity<PresignedUrlResponse> getPresignedUrl(@RequestBody @Valid GetPresignedUrlRequest request) {
-		PresignedUrlResponse response = awsS3Service.generatePresignedUrl(request);
+		PresignedUrlResponse response = awsS3Service.generatePutPresignedUrl(request);
 		return ResponseEntity.ok(response);
 	}
 

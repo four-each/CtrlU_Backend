@@ -23,11 +23,10 @@ public class TodoController {
 
     @PostMapping
     public BaseResponse<CreateTodoResponse> createTodo(
-            @RequestPart("request") @Valid CreateTodoRequest request,
-            @RequestPart("startImage") MultipartFile startImage,
+            @RequestBody @Valid CreateTodoRequest request,
             @AuthenticationPrincipal Long userId
     ){
-        CreateTodoResponse response = todoService.createTodo(userId, request, startImage);
+        CreateTodoResponse response = todoService.createTodo(userId, request);
         return new BaseResponse<>(response);
     }
 
@@ -41,11 +40,10 @@ public class TodoController {
     @PostMapping("/{todoId}/complete")
     public BaseResponse<Void> completeTodo(
             @PathVariable long todoId,
-            @RequestPart("request") @Valid CompleteTodoRequest request,
-            @RequestPart("endImage") MultipartFile endImage,
+            @RequestBody @Valid CompleteTodoRequest request,
             @AuthenticationPrincipal Long userId
     ){
-        todoService.completeTodo(userId, todoId, request, endImage);
+        todoService.completeTodo(userId, todoId, request);
         return new BaseResponse<>(null);
     }
 

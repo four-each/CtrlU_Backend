@@ -47,14 +47,13 @@ public class TodoService {
         return LocalDateTime.now(clock);
     }
 
-    public CreateTodoResponse createTodo(long userId, CreateTodoRequest request, MultipartFile startImage) {
+    public CreateTodoResponse createTodo(long userId, CreateTodoRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(NOT_FOUND_USER));
         if(!todoRepository.findAllByUserIdAndStatus(userId, TodoStatus.IN_PROGRESS).isEmpty())
             throw new TodoException(ALREADY_EXIST_IN_PROGRESS_TODO);
 
-        String startImageUrl = awsS3Service.uploadImage(startImage);
-        Todo newTodo = Todo.builder().title(request.title()).startImage(startImageUrl).user(user).challengeTime(request.challengeTime()).build();
+        Todo newTodo = Todo.builder().title(request.title()).startImage(request.startImageKey()).user(user).challengeTime(request.challengeTime()).build();
         Long todoId = todoRepository.save(newTodo).getId();
         return new CreateTodoResponse(todoId);
     }
@@ -77,14 +76,13 @@ public class TodoService {
         return false;
     }
 
-    public void completeTodo(long userId, long todoId, CompleteTodoRequest request, MultipartFile endImage) {
+    public void completeTodo(long userId, long todoId, CompleteTodoRequest request) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(NOT_FOUND_USER));
         Todo todo = todoRepository.findById(todoId).orElseThrow(() -> new TodoException(NOT_FOUND_TODO));
         if(todo.getUser()!=user) throw new TodoException(NOT_YOUR_TODO);
         if(!todo.getStatus().equals(TodoStatus.IN_PROGRESS)) throw new TodoException(NOT_IN_PROGRESS_TODO, "상태: " +todo.getStatus().name());
 
-        String endImageUrl = awsS3Service.uploadImage(endImage);
-        todo.complete(request.durationTime(), endImageUrl);
+        todo.complete(request.durationTime(), request.endImageKey());
     }
 
     public void giveUpTodo(long userId, long todoId) {

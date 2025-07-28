@@ -25,7 +25,7 @@ public class AwsS3Service {
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName;
 
-	public PresignedUrlResponse generatePresignedUrl(GetPresignedUrlRequest request) {
+	public PresignedUrlResponse generatePutPresignedUrl(GetPresignedUrlRequest request) {
 		String fileName = request.imageType().getPath() + "/" + UUID.randomUUID() + request.fileExtension();
 
 		PutObjectRequest objectRequest = PutObjectRequest.builder()
