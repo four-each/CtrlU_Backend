@@ -5,10 +5,10 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ImageType {
-	PROFILE("profiles"),
-	START_IMAGE("startImage"),
-	END_IMAGe("endImage");
+public enum ImagePath {
+	PROFILE("user/profile"),
+	START_IMAGE("todo/startImage"),
+	END_IMAGe("todo/endImage");
 
 	private final String path;
 }

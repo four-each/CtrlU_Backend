@@ -17,7 +17,7 @@ import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.entity.UserStatus;
 import org.example.ctrlu.domain.user.repository.UserRepository;
 import org.example.ctrlu.global.s3.AwsS3Service;
-import org.example.ctrlu.domain.auth.dto.response.PresignedUrlResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,20 +40,28 @@ public class AuthService {
 	private final MailService mailService;
 	private final JWTUtil jwtUtil;
 
+	@Value("${cloud.aws.s3.default-profile-image}")
+	private String defaultImageKey;
+
 	@Transactional
 	public void signup(SignupRequest request) {
 		Optional<User> optionalUser = userRepository.findByEmail(request.email());
 
+		String profileImageKey = request.profileImageKey();
+		if (profileImageKey == null || profileImageKey.isBlank()) {
+			profileImageKey = defaultImageKey;
+		}
+
 		if (optionalUser.isPresent()) {
 			User user = optionalUser.get();
-			handleExistingUser(request, user);
+			handleExistingUser(request, user, profileImageKey);
 			return;
 		}
 
-		createNewUser(request);
+		createNewUser(request, profileImageKey);
 	}
 
-	private void handleExistingUser(SignupRequest request, User user) {
+	private void handleExistingUser(SignupRequest request, User user, String profileImageKey) {
 		if (user.getStatus() == UserStatus.ACTIVE) {
 			throw new AuthException(ALREADY_EXIST_EMAIL);
 		}
@@ -63,23 +71,23 @@ public class AuthService {
 		}
 
 		// 사용자 정보 갱신 후 이메일 전송
-		restoreAndSendEmail(request, user);
+		restoreAndSendEmail(request, user, profileImageKey);
 	}
 
-	private void restoreAndSendEmail(SignupRequest request, User user) {
+	private void restoreAndSendEmail(SignupRequest request, User user, String profileImageKey) {
 		String encodedPassword = passwordEncoder.encode(request.password());
-		user.restore(encodedPassword, request.nickname(), request.profileImageKey(), jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME));
+		user.restore(encodedPassword, request.nickname(), profileImageKey, jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME));
 		mailService.sendVerifyEmail(user);
 	}
 
-	private void createNewUser(SignupRequest request) {
+	private void createNewUser(SignupRequest request, String profileImageKey) {
 		String encodedPassword = passwordEncoder.encode(request.password());
 
 		User newUser = User.builder()
 			.email(request.email())
 			.password(encodedPassword)
 			.nickname(request.nickname())
-			.profileImageKey(request.profileImageKey())
+			.profileImageKey(profileImageKey)
 			.verifyToken(jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME))
 			.build();
 

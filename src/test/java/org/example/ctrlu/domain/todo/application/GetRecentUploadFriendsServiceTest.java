@@ -90,12 +90,14 @@ public class GetRecentUploadFriendsServiceTest {
                 .nickname("나")
                 .email("me@ctrlu.com")
                 .password("pw")
+                .profileImageKey("profileImage")
                 .build());
 
         friend = userRepository.save(User.builder()
                 .nickname("친구")
                 .email("friend@ctrlu.com")
                 .password("pw")
+                .profileImageKey("profileImage")
                 .build());
     }
 
@@ -230,6 +232,7 @@ public class GetRecentUploadFriendsServiceTest {
                 .nickname("친구2")
                 .email("friend2@ctrlu.com")
                 .password("pw")
+                .profileImageKey("image")
                 .build());
         Friendship friendShip2 = Friendship.builder().fromUser(me).toUser(friend2).build();
         friendShip2.accept();

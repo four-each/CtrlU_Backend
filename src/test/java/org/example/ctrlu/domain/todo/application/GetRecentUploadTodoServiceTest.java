@@ -26,6 +26,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
@@ -96,8 +97,8 @@ public class GetRecentUploadTodoServiceTest {
         userRepository.deleteAll();
         Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().flushAll();
 
-        user = User.builder().nickname("유저 닉네임").email("test@gmail.com").password("pass").build();
-        target = User.builder().nickname("타겟 닉네임").email("target@gmail.com").password("pass").build();
+        user = User.builder().nickname("유저 닉네임").email("test@gmail.com").password("pass").profileImageKey("profileImage").build();
+        target = User.builder().nickname("타겟 닉네임").email("target@gmail.com").password("pass").profileImageKey("profileImage").build();
 
         userId = userRepository.save(user).getId();
         targetId = userRepository.save(target).getId();
@@ -118,6 +119,9 @@ public class GetRecentUploadTodoServiceTest {
     @Test
     @DisplayName("초기 요청 - 본 이력이 없는 경우 - firstTodo 반환 + Redis 갱신")
     void getInitialTodo_noSeenHistory_returnsFirstTodo() {
+        // given
+        ReflectionTestUtils.setField(firstTodo,"endImage", "endImage");
+
         // when
         GetRecentUploadTodoResponse response = todoService.getRecentUploadTodo(userId, targetId, 0L);
 
@@ -133,6 +137,7 @@ public class GetRecentUploadTodoServiceTest {
     void getInitialTodo_invalidSeenHistory_returnsFirstTodo() {
         // given
         redisTemplate.opsForHash().put(redisKey, String.valueOf(targetId), String.valueOf(999L));
+        ReflectionTestUtils.setField(firstTodo,"endImage", "endImage");
 
         // when
         GetRecentUploadTodoResponse response = todoService.getRecentUploadTodo(userId, targetId, 0L);
@@ -149,6 +154,7 @@ public class GetRecentUploadTodoServiceTest {
     void getInitialTodo_validSeenHistory_isLastTodo_returnsFirstAgain() {
         // given
         redisTemplate.opsForHash().put(redisKey, String.valueOf(targetId), String.valueOf(thirdTodoId));
+        ReflectionTestUtils.setField(firstTodo,"endImage", "endImage");
 
         // when
         GetRecentUploadTodoResponse response = todoService.getRecentUploadTodo(userId, targetId, 0);
@@ -165,6 +171,7 @@ public class GetRecentUploadTodoServiceTest {
     void getInitialTodo_validSeenHistory_notLastTodo_returnsNextTodo() {
         // given
         redisTemplate.opsForHash().put(redisKey, String.valueOf(targetId), String.valueOf(firstTodoId));
+        ReflectionTestUtils.setField(secondTodo,"endImage", "endImage");
 
         // when
         GetRecentUploadTodoResponse response = todoService.getRecentUploadTodo(userId, targetId, 0);
@@ -179,6 +186,9 @@ public class GetRecentUploadTodoServiceTest {
     @Test
     @DisplayName("다음 커서 요청 - 본 이력이 없는 경우 - 해당 커서 반환 + Redis 갱신")
     void getNextTodo_noSeenHistory_returnsNowIdTodoAndUpdatesRedis() {
+        // given
+        ReflectionTestUtils.setField(firstTodo,"endImage", "endImage");
+
         // when
         GetRecentUploadTodoResponse response = todoService.getRecentUploadTodo(userId, targetId, firstTodoId);
 
@@ -194,6 +204,7 @@ public class GetRecentUploadTodoServiceTest {
     void getNextTodo_seenHistoryNotUpdateNeeded_returnsNowIdTodo() {
         // given
         redisTemplate.opsForHash().put(redisKey, String.valueOf(targetId), String.valueOf(thirdTodoId));
+        ReflectionTestUtils.setField(firstTodo,"endImage", "endImage");
 
         // when
         GetRecentUploadTodoResponse response = todoService.getRecentUploadTodo(userId, targetId, firstTodoId);
