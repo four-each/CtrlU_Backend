@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
@@ -25,7 +26,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 @Service
 @RequiredArgsConstructor
 public class AwsS3Service {
-	private final S3Client amazonS3;
+	private final S3Client s3Client;
 	private final S3Presigner s3Presigner;
 
 	@Value("${cloud.aws.s3.bucket}")
@@ -76,6 +77,19 @@ public class AwsS3Service {
 	}
 
 	public void deleteImage(String fileName){
-		// amazonS3.deleteObject(new DeleteObjectRequest(bucketName, fileName));
+		if (fileName == null || fileName.isBlank()) {
+			return;
+		}
+
+		try {
+			DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+				.bucket(bucketName)
+				.key(fileName)
+				.build();
+
+			s3Client.deleteObject(deleteObjectRequest);
+		} catch (S3Exception e) {
+			throw new BaseException(S3ErrorCode.DELETE_IMAGE_FAILED);
+		}
 	}
 }

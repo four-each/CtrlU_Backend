@@ -9,7 +9,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum S3ErrorCode implements ErrorCode {
-	GENERATE_URL_FAILED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "S001", "Presigned URL 생성에 실패했습니다.");
+	GENERATE_URL_FAILED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "S001", "Presigned URL 생성에 실패했습니다."),
+	DELETE_IMAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR.value(), "S002", "이미지 삭제에 실패했습니다.");
 
 	private final int status;
 	private final String code;
