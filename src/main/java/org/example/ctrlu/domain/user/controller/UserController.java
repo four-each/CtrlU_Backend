@@ -6,8 +6,10 @@ import org.example.ctrlu.domain.user.application.UserService;
 import org.example.ctrlu.domain.user.dto.request.UpdatePasswordRequest;
 import org.example.ctrlu.domain.user.dto.request.UpdateProfileRequest;
 import org.example.ctrlu.domain.user.dto.response.CursorResult;
+import org.example.ctrlu.domain.user.dto.response.GetProfileResponse;
 import org.example.ctrlu.domain.user.dto.response.SearchUsersResponse;
 import org.example.ctrlu.global.response.BaseResponse;
+import org.example.ctrlu.global.s3.AwsS3Service;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -53,5 +55,12 @@ public class UserController {
 		@RequestParam(defaultValue = "10") int size
 	) {
 		return new BaseResponse<>(userService.searchUsersByEmail(keyword, cursorId, size));
+	}
+
+	@GetMapping("profile")
+	public BaseResponse<GetProfileResponse> getProfile(
+		@AuthenticationPrincipal Long userId
+	) {
+		return new BaseResponse<>(userService.getProfile(userId));
 	}
 }

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.example.ctrlu.domain.user.dto.request.UpdatePasswordRequest;
 import org.example.ctrlu.domain.user.dto.request.UpdateProfileRequest;
 import org.example.ctrlu.domain.user.dto.response.CursorResult;
+import org.example.ctrlu.domain.user.dto.response.GetProfileResponse;
 import org.example.ctrlu.domain.user.dto.response.SearchUsersResponse;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.exception.UserException;
@@ -78,5 +79,12 @@ public class UserService {
 		}
 
 		return CursorResult.of(usersSlice, SearchUsersResponse::from, SearchUsersResponse::id);
+	}
+
+	public GetProfileResponse getProfile(Long userId) {
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new UserException(NOT_FOUND_USER));
+
+		return GetProfileResponse.from(user, awsS3Service);
 	}
 }
