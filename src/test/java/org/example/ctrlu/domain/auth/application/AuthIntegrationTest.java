@@ -73,7 +73,7 @@ public class AuthIntegrationTest {
 			.email("test@test.com")
 			.password(passwordEncoder.encode("password123"))
 			.nickname("nickname")
-			.image("image")
+			.profileImageKey("image")
 			.verifyToken("verifytoken")
 			.build();
 

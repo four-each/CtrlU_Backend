@@ -16,6 +16,7 @@ cloud:
       secretKey: ${AWS_SECRET_KEY}
     s3:
       bucket: ${AWS_S3_BUCKET}
+      default-profile-image: defaults/default-profile.jpg
     region:
       static: ap-northeast-2
     stack:
@@ -42,7 +43,7 @@ spring:
   jpa:
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     properties:
       hibernate:
         jdbc:

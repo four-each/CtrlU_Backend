@@ -70,7 +70,7 @@ public class RequestFriendshipConcurrencyTest {
 				.nickname("loginUser")
 				.email("usera@test.com")
 				.password("password")
-				.image("image")
+				.profileImageKey("image")
 				.build()
 			);
 			userA.changeUserStatusToActive();
@@ -79,7 +79,7 @@ public class RequestFriendshipConcurrencyTest {
 				.nickname("targetUser")
 				.email("userb@test.com")
 				.password("password")
-				.image("image")
+				.profileImageKey("image")
 				.build()
 			);
 			userB.changeUserStatusToActive();

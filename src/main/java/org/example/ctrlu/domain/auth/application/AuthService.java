@@ -17,11 +17,11 @@ import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.entity.UserStatus;
 import org.example.ctrlu.domain.user.repository.UserRepository;
 import org.example.ctrlu.global.s3.AwsS3Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
@@ -40,20 +40,28 @@ public class AuthService {
 	private final MailService mailService;
 	private final JWTUtil jwtUtil;
 
+	@Value("${cloud.aws.s3.default-profile-image}")
+	private String defaultImageKey;
+
 	@Transactional
-	public void signup(SignupRequest signupRequest, MultipartFile file) {
-		Optional<User> optionalUser = userRepository.findByEmail(signupRequest.email());
+	public void signup(SignupRequest request) {
+		Optional<User> optionalUser = userRepository.findByEmail(request.email());
+
+		String profileImageKey = request.profileImageKey();
+		if (profileImageKey == null || profileImageKey.isBlank()) {
+			profileImageKey = defaultImageKey;
+		}
 
 		if (optionalUser.isPresent()) {
 			User user = optionalUser.get();
-			handleExistingUser(signupRequest, file, user);
+			handleExistingUser(request, user, profileImageKey);
 			return;
 		}
 
-		createNewUser(signupRequest, file);
+		createNewUser(request, profileImageKey);
 	}
 
-	private void handleExistingUser(SignupRequest signupRequest, MultipartFile file, User user) {
+	private void handleExistingUser(SignupRequest request, User user, String profileImageKey) {
 		if (user.getStatus() == UserStatus.ACTIVE) {
 			throw new AuthException(ALREADY_EXIST_EMAIL);
 		}
@@ -63,25 +71,23 @@ public class AuthService {
 		}
 
 		// 사용자 정보 갱신 후 이메일 전송
-		restoreAndSendEmail(signupRequest, file, user);
+		restoreAndSendEmail(request, user, profileImageKey);
 	}
 
-	private void restoreAndSendEmail(SignupRequest signupRequest, MultipartFile file, User user) {
-		String imageUrl = awsS3Service.uploadImage(file);
-		String encodedPassword = passwordEncoder.encode(signupRequest.password());
-		user.restore(encodedPassword, signupRequest.nickname(), imageUrl, jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME));
+	private void restoreAndSendEmail(SignupRequest request, User user, String profileImageKey) {
+		String encodedPassword = passwordEncoder.encode(request.password());
+		user.restore(encodedPassword, request.nickname(), profileImageKey, jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME));
 		mailService.sendVerifyEmail(user);
 	}
 
-	private void createNewUser(SignupRequest request, MultipartFile file) {
-		String imageUrl = awsS3Service.uploadImage(file);
+	private void createNewUser(SignupRequest request, String profileImageKey) {
 		String encodedPassword = passwordEncoder.encode(request.password());
 
 		User newUser = User.builder()
 			.email(request.email())
 			.password(encodedPassword)
 			.nickname(request.nickname())
-			.image(imageUrl)
+			.profileImageKey(profileImageKey)
 			.verifyToken(jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME))
 			.build();
 

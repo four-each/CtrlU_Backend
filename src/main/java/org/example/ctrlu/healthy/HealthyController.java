@@ -37,11 +37,6 @@ public class HealthyController {
         return "Redis Connected, Value: " + result;
     }
 
-    @PostMapping("/api/file")
-    public String uploadFile(MultipartFile file) {
-        return awsS3Service.uploadImage(file);
-    }
-
     @DeleteMapping("/api/file")
     public void deleteFile(@RequestParam String fileName) {
         awsS3Service.deleteImage(fileName);

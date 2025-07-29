@@ -47,14 +47,13 @@ public class TodoService {
         return LocalDateTime.now(clock);
     }
 
-    public CreateTodoResponse createTodo(long userId, CreateTodoRequest request, MultipartFile startImage) {
+    public CreateTodoResponse createTodo(long userId, CreateTodoRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(NOT_FOUND_USER));
         if(!todoRepository.findAllByUserIdAndStatus(userId, TodoStatus.IN_PROGRESS).isEmpty())
             throw new TodoException(ALREADY_EXIST_IN_PROGRESS_TODO);
 
-        String startImageUrl = awsS3Service.uploadImage(startImage);
-        Todo newTodo = Todo.builder().title(request.title()).startImage(startImageUrl).user(user).challengeTime(request.challengeTime()).build();
+        Todo newTodo = Todo.builder().title(request.title()).startImage(request.startImageKey()).user(user).challengeTime(request.challengeTime()).build();
         Long todoId = todoRepository.save(newTodo).getId();
         return new CreateTodoResponse(todoId);
     }
@@ -69,7 +68,7 @@ public class TodoService {
         int durationTime = DurationTimeCalculator.calculate(todo, now());
         boolean isMine = getIsMine(todo,user);
 
-        return GetTodoResponse.from(todo,durationTime,isMine);
+        return GetTodoResponse.from(todo,durationTime, isMine, awsS3Service);
     }
 
     private boolean getIsMine(Todo todo, User user) {
@@ -77,14 +76,13 @@ public class TodoService {
         return false;
     }
 
-    public void completeTodo(long userId, long todoId, CompleteTodoRequest request, MultipartFile endImage) {
+    public void completeTodo(long userId, long todoId, CompleteTodoRequest request) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(NOT_FOUND_USER));
         Todo todo = todoRepository.findById(todoId).orElseThrow(() -> new TodoException(NOT_FOUND_TODO));
         if(todo.getUser()!=user) throw new TodoException(NOT_YOUR_TODO);
         if(!todo.getStatus().equals(TodoStatus.IN_PROGRESS)) throw new TodoException(NOT_IN_PROGRESS_TODO, "상태: " +todo.getStatus().name());
 
-        String endImageUrl = awsS3Service.uploadImage(endImage);
-        todo.complete(request.durationTime(), endImageUrl);
+        todo.complete(request.durationTime(), request.endImageKey());
     }
 
     public void giveUpTodo(long userId, long todoId) {
@@ -117,13 +115,13 @@ public class TodoService {
         }
 
         Page<Todo> todosPage = todoRepository.findAllByUserIdInAndStatus(friendIds, status, pageable);
-        return GetTodosResponse.from(todosPage, now());
+        return GetTodosResponse.from(todosPage, now(), awsS3Service);
     }
 
     private GetTodosResponse getMyTodos(long userId, TodoStatus status, Pageable pageable) {
         userRepository.findById(userId).orElseThrow(() -> new UserException(NOT_FOUND_USER));
         Page<Todo> todosPage = todoRepository.findAllByUserIdAndStatus(userId, status, pageable);
-        return GetTodosResponse.from(todosPage, now());
+        return GetTodosResponse.from(todosPage, now(), awsS3Service);
     }
 
     @Transactional(readOnly = true)
@@ -165,9 +163,9 @@ public class TodoService {
             String profileImage = userRepository.getImageById(friendId);
 
             responseFriends.add(new GetRecentUploadFriendsResponse.Friend(
-                    friendId,
-                    profileImage,
-                    status
+                friendId,
+                awsS3Service.generateGetPresignedUrl(profileImage),
+                status
             ));
         }
 
@@ -195,7 +193,7 @@ public class TodoService {
 
         GetRecentUploadFriendsResponse.Me me = new GetRecentUploadFriendsResponse.Me(
                 userId,
-                myProfileImage,
+                awsS3Service.generateGetPresignedUrl(myProfileImage),
                 status
         );
         return me;
@@ -226,20 +224,20 @@ public class TodoService {
                 if (latestIndex == -1 || latestIndex == recentTodos.size() - 1){
                     Todo first = recentTodos.get(0);
                     if (latestIndex == -1) redisTemplate.opsForHash().put(redisKey, String.valueOf(targetId), String.valueOf(first.getId()));
-                    return GetRecentUploadTodoResponse.from(now(), first, null, getNextId(recentTodos, 0), recentTodos.size());
+                    return GetRecentUploadTodoResponse.from(now(), first, null, getNextId(recentTodos, 0), recentTodos.size(), awsS3Service);
                 }
                 //유효한 본 이력이고 아직 가장 최신 할 일을 조회하지 않은 경우
                 else {
                     Todo next = recentTodos.get(latestIndex + 1);
                     redisTemplate.opsForHash().put(redisKey, String.valueOf(targetId), String.valueOf(next.getId()));
-                    return GetRecentUploadTodoResponse.from(now(), next, recentTodos.get(latestIndex).getId(), getNextId(recentTodos, latestIndex + 1), recentTodos.size());
+                    return GetRecentUploadTodoResponse.from(now(), next, recentTodos.get(latestIndex).getId(), getNextId(recentTodos, latestIndex + 1), recentTodos.size(), awsS3Service);
                 }
             }
             //Redis 에 이 전에 본 이력이 없는 경우
             else {
                 Todo first = recentTodos.get(0);
                 redisTemplate.opsForHash().put(redisKey, String.valueOf(targetId), String.valueOf(first.getId()));
-                return GetRecentUploadTodoResponse.from(now(), first, null, getNextId(recentTodos, 0), recentTodos.size());
+                return GetRecentUploadTodoResponse.from(now(), first, null, getNextId(recentTodos, 0), recentTodos.size(), awsS3Service);
 
             }
         }
@@ -269,7 +267,7 @@ public class TodoService {
 
         Long prevId = currentIndex > 0 ? recentTodos.get(currentIndex - 1).getId() : null;
         Long nextId = getNextId(recentTodos, currentIndex);
-        return GetRecentUploadTodoResponse.from(now(), recentTodos.get(currentIndex), prevId, nextId, recentTodos.size());
+        return GetRecentUploadTodoResponse.from(now(), recentTodos.get(currentIndex), prevId, nextId, recentTodos.size(), awsS3Service);
     }
 
     private Long getNextId(List<Todo> todos, int index) {

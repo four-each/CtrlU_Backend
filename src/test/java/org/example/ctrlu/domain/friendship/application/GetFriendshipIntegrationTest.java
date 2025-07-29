@@ -63,11 +63,11 @@ public class GetFriendshipIntegrationTest {
 		friendshipRepository.deleteAll();
 		userRepository.deleteAll();
 
-		user = User.builder().nickname("유저").email("user@example.com").password("pass").image("img1.png").build();
-		friend = User.builder().nickname("친구").email("friend@example.com").password("pass").image("img2.png").build();
-		requester = User.builder().nickname("요청자").email("requester@example.com").password("pass").image("img3.png").build();
-		receiver = User.builder().nickname("받는이").email("receiver@example.com").password("pass").image("img4.png").build();
-		user2 = User.builder().nickname("관계없는이").email("stranger@example.com").password("pass").image("img5.png").build();
+		user = User.builder().nickname("유저").email("user@example.com").password("pass").profileImageKey("img1.png").build();
+		friend = User.builder().nickname("친구").email("friend@example.com").password("pass").profileImageKey("img2.png").build();
+		requester = User.builder().nickname("요청자").email("requester@example.com").password("pass").profileImageKey("img3.png").build();
+		receiver = User.builder().nickname("받는이").email("receiver@example.com").password("pass").profileImageKey("img4.png").build();
+		user2 = User.builder().nickname("관계없는이").email("stranger@example.com").password("pass").profileImageKey("img5.png").build();
 
 		user = userRepository.save(user);
 		friend = userRepository.save(friend);

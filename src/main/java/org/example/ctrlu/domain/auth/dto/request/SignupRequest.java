@@ -14,6 +14,7 @@ public record SignupRequest (
 	)
 	String password,
 	@NotBlank
-	String nickname
+	String nickname,
+	String profileImageKey
 ) {
 }

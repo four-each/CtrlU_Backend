@@ -37,6 +37,7 @@ cloud:
       secretKey: FAKE
     s3:
       bucket: FAKE
+      default-profile-image: FAKE
     region:
       static: FAKE
     stack:

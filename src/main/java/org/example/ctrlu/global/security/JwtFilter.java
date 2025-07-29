@@ -35,7 +35,8 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 		"/auth/reissue",
 		"/auth/verify",
 		"/auth/find-password",
-		"/auth/reset-password"
+		"/auth/reset-password",
+		"/auth/presigned-url"
 	};
 	private static final Set<String> EXCLUDE_PATHS = new HashSet<>(Arrays.asList(
 		"/error",

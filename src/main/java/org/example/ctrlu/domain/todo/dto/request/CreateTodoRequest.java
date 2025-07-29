@@ -9,6 +9,8 @@ public record CreateTodoRequest (
         @NotBlank
         String title,
         @NotNull
-        LocalTime challengeTime
+        LocalTime challengeTime,
+        @NotBlank
+        String startImageKey
 ) {
 }

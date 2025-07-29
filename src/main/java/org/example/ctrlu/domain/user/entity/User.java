@@ -31,7 +31,7 @@ public class User extends BaseEntity {
 	@Column(nullable = false)
 	private String nickname;
 
-	private String image;
+	private String profileImageKey;
 
 	private String verifyToken;
 
@@ -40,19 +40,19 @@ public class User extends BaseEntity {
 	private UserStatus status;
 
 	@Builder
-	public User(String email, String password, String nickname, String image, String verifyToken) {
+	public User(String email, String password, String nickname, String profileImageKey, String verifyToken) {
 		this.email = email;
 		this.password = password;
 		this.nickname = nickname;
-		this.image = image;
+		this.profileImageKey = profileImageKey;
 		this.verifyToken = verifyToken;
 		this.status = UserStatus.NONCERTIFIED;
 	}
 
-	public void restore(String password, String nickname, String image, String verifyToken) {
+	public void restore(String password, String nickname, String profileImageKey, String verifyToken) {
 		this.password = password;
 		this.nickname = nickname;
-		this.image = image;
+		this.profileImageKey = profileImageKey;
 		this.verifyToken = verifyToken;
 		this.status = UserStatus.NONCERTIFIED;
 	}
@@ -69,9 +69,9 @@ public class User extends BaseEntity {
 		this.password = password;
 	}
 
-	public void updateProfile(String nickname, String image) {
+	public void updateProfile(String nickname, String profileImageKey) {
 		this.nickname = nickname;
-		this.image = image;
+		this.profileImageKey = profileImageKey;
 	}
 
 	public void updateVerifyToken(String verifyToken) {

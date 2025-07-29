@@ -9,11 +9,13 @@ import java.util.stream.Collectors;
 import org.example.ctrlu.domain.user.dto.request.UpdatePasswordRequest;
 import org.example.ctrlu.domain.user.dto.request.UpdateProfileRequest;
 import org.example.ctrlu.domain.user.dto.response.CursorResult;
+import org.example.ctrlu.domain.user.dto.response.GetProfileResponse;
 import org.example.ctrlu.domain.user.dto.response.SearchUsersResponse;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.exception.UserException;
 import org.example.ctrlu.domain.user.repository.UserRepository;
 import org.example.ctrlu.global.s3.AwsS3Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +33,9 @@ public class UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final AwsS3Service awsS3Service;
 
+	@Value("${cloud.aws.s3.default-profile-image}")
+	private String defaultImageKey;
+
 	@Transactional
 	public void updatePassword(Long userId, UpdatePasswordRequest request) {
 		User user = userRepository.findById(userId)
@@ -44,13 +49,17 @@ public class UserService {
 	}
 
 	@Transactional
-	public void updateProfile(Long userId, UpdateProfileRequest request, MultipartFile userImage) {
+	public void updateProfile(Long userId, UpdateProfileRequest request) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new UserException(NOT_FOUND_USER));
 
-		awsS3Service.deleteImage(user.getImage());
-		String imageUrl = awsS3Service.uploadImage(userImage);
-		user.updateProfile(request.nickname(), imageUrl);
+		String profileImageKey = request.profileImageKey();
+		if (profileImageKey == null || profileImageKey.isBlank()) {
+			profileImageKey = defaultImageKey;
+		}
+
+		awsS3Service.deleteImage(user.getProfileImageKey());
+		user.updateProfile(request.nickname(), profileImageKey);
 	}
 
 	@Transactional(readOnly = true)
@@ -70,5 +79,12 @@ public class UserService {
 		}
 
 		return CursorResult.of(usersSlice, SearchUsersResponse::from, SearchUsersResponse::id);
+	}
+
+	public GetProfileResponse getProfile(Long userId) {
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new UserException(NOT_FOUND_USER));
+
+		return GetProfileResponse.from(user, awsS3Service);
 	}
 }

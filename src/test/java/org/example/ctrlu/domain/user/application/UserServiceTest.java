@@ -46,7 +46,7 @@ class UserServiceTest {
 			.email("test@test.com")
 			.password("encodedOldPassword")
 			.nickname("nickname")
-			.image("oldImageUrl")
+			.profileImageKey("oldImageUrl")
 			.verifyToken("verifytoken")
 			.build();
 		user.changeUserStatusToActive();
@@ -90,17 +90,16 @@ class UserServiceTest {
 	@DisplayName("프로필 변경에 성공한다.")
 	void updateProfile_ShouldSucceed() {
 		// given
-		UpdateProfileRequest request = new UpdateProfileRequest("newNickname");
+		UpdateProfileRequest request = new UpdateProfileRequest("newNickname", "profile/123.jpg");
 
 		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-		when(awsS3Service.uploadImage(file)).thenReturn("newImageUrl");
 
 		// when
-		userService.updateProfile(userId, request, file);
+		userService.updateProfile(userId, request);
 
 		// then
 		assertThat("newNickname").isEqualTo(user.getNickname());
-		assertThat("newImageUrl").isEqualTo(user.getImage());
+		assertThat("profile/123.jpg").isEqualTo(user.getProfileImageKey());
 	}
 
 }

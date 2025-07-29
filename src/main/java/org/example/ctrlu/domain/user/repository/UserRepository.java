@@ -17,7 +17,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByVerifyTokenAndStatus(String verifyToken, UserStatus status);
 	Optional<User> findByIdAndStatus(Long userId, UserStatus status);
 
-	@Query("SELECT u.image FROM User u WHERE u.id = :id")
+	@Query("SELECT u.profileImageKey FROM User u WHERE u.id = :id")
     String getImageById(@Param("id") Long id);
 
 	@Query("""

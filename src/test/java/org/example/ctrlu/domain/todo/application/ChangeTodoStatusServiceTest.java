@@ -81,15 +81,13 @@ public class ChangeTodoStatusServiceTest {
         void complete_inProgress_success() {
             // given
             given(todo.getStatus()).willReturn(TodoStatus.IN_PROGRESS);
-            CompleteTodoRequest request = new CompleteTodoRequest(3600000);
-            MockMultipartFile endImage = new MockMultipartFile("endImage", "end.png", "image/png", "test".getBytes());
-            given(awsS3Service.uploadImage(endImage)).willReturn("url");
+            CompleteTodoRequest request = new CompleteTodoRequest(3600000, "endImage/123.png");
 
             // when
-            todoService.completeTodo(userId, todoId, request, endImage);
+            todoService.completeTodo(userId, todoId, request);
 
             // then
-            verify(todo).complete(eq(3600000), eq("url"));
+            verify(todo).complete(eq(3600000), eq("endImage/123.png"));
         }
 
         @ParameterizedTest
@@ -99,11 +97,10 @@ public class ChangeTodoStatusServiceTest {
             // given
             given(todo.getStatus()).willReturn(status);
 
-            CompleteTodoRequest request = new CompleteTodoRequest(1000);
-            MockMultipartFile endImage = new MockMultipartFile("endImage", "end.png", "image/png", "test".getBytes());
+            CompleteTodoRequest request = new CompleteTodoRequest(3600000, "endImage/123.png");
 
             // when & then
-            assertThatThrownBy(() -> todoService.completeTodo(userId, todoId, request, endImage))
+            assertThatThrownBy(() -> todoService.completeTodo(userId, todoId, request))
                     .isInstanceOf(TodoException.class)
                     .hasMessageContaining(NOT_IN_PROGRESS_TODO.getMessage(), status.name());
         }

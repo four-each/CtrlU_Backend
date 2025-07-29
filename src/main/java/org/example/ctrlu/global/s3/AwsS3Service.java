@@ -1,74 +1,95 @@
 package org.example.ctrlu.global.s3;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.time.Duration;
 import java.util.UUID;
 
+import org.example.ctrlu.domain.auth.dto.request.GetPresignedUrlRequest;
+import org.example.ctrlu.domain.auth.dto.response.PresignedUrlResponse;
+import org.example.ctrlu.global.exception.BaseException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AwsS3Service {
-	private final AmazonS3 amazonS3;
+	private final S3Client s3Client;
+	private final S3Presigner s3Presigner;
 
 	@Value("${cloud.aws.s3.bucket}")
-	private String bucket;
+	private String bucketName;
 
-	public String uploadImage(MultipartFile image) {
-		if (image == null || image.isEmpty()) {
-			return null;
+	public PresignedUrlResponse generatePutPresignedUrl(GetPresignedUrlRequest request) {
+		try {
+			String fileName = request.imageType().getPath() + "/" + UUID.randomUUID() + request.fileExtension();
+
+			PutObjectRequest objectRequest = PutObjectRequest.builder()
+				.bucket(bucketName)
+				.key(fileName)
+				.build();
+
+			PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+				.signatureDuration(Duration.ofMinutes(5))
+				.putObjectRequest(objectRequest)
+				.build();
+
+			PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
+			return new PresignedUrlResponse(presignedRequest.url().toString(), fileName);
+		} catch (S3Exception e) {
+			throw new BaseException(S3ErrorCode.GENERATE_URL_FAILED);
 		}
+	}
 
-		// 메타데이터 설정
-		String fileName = createFileName(image.getOriginalFilename());
-		ObjectMetadata objectMetadata = new ObjectMetadata();
-		objectMetadata.setContentLength(image.getSize());
-		objectMetadata.setContentType(image.getContentType());
+	public String generateGetPresignedUrl(String fileName) {
+		try {
+			if (fileName == null || fileName.isBlank()) {
+				return null;
+			}
 
-		try(InputStream inputStream = image.getInputStream()){
-			// S3에 파일 업로드 요청 생성
-			PutObjectRequest putObjectRequest =
-				new PutObjectRequest(bucket, fileName, inputStream, objectMetadata);
+			GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+				.bucket(bucketName)
+				.key(fileName)
+				.build();
 
-			//  S3에 파일 업로드
-			amazonS3.putObject(putObjectRequest);
-		} catch (IOException e){
-			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
+			GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+				.signatureDuration(Duration.ofMinutes(5))
+				.getObjectRequest(getObjectRequest)
+				.build();
+
+			PresignedGetObjectRequest presignedGetObjectRequest = s3Presigner.presignGetObject(presignRequest);
+			return presignedGetObjectRequest.url().toString();
+		} catch (S3Exception e) {
+			throw new BaseException(S3ErrorCode.GENERATE_URL_FAILED);
 		}
-
-		return getPublicUrl(fileName);
 	}
 
 	public void deleteImage(String fileName){
-		amazonS3.deleteObject(new DeleteObjectRequest(bucket, fileName));
-	}
+		if (fileName == null || fileName.isBlank()) {
+			return;
+		}
 
-	private String getPublicUrl(String fileName){
-		return amazonS3.getUrl(bucket, fileName).toString();
-	}
+		try {
+			DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+				.bucket(bucketName)
+				.key(fileName)
+				.build();
 
-	// 파일명을 난수화하기 위해 UUID를 활용하여 난수를 돌린다.
-	private String createFileName(String fileName){
-		return UUID.randomUUID().toString().concat(getFileExtension(fileName));
-	}
-
-	//  "."의 존재 유무만 판단
-	private String getFileExtension(String fileName){
-		try{
-			return fileName.substring(fileName.lastIndexOf("."));
-		} catch (StringIndexOutOfBoundsException e){
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 형식의 파일" + fileName + ") 입니다.");
+			s3Client.deleteObject(deleteObjectRequest);
+		} catch (S3Exception e) {
+			throw new BaseException(S3ErrorCode.DELETE_IMAGE_FAILED);
 		}
 	}
 }
