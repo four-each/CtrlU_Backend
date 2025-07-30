@@ -1,5 +1,6 @@
 package org.example.ctrlu.domain.friendship.controller;
 
+import org.example.ctrlu.domain.friendship.application.FriendshipOptimisticLockService;
 import org.example.ctrlu.domain.friendship.application.FriendshipService;
 import org.example.ctrlu.domain.friendship.dto.request.FriendshipRequest;
 import org.example.ctrlu.domain.friendship.dto.response.GetFriendshipListResponse;
@@ -22,6 +23,7 @@ import lombok.AllArgsConstructor;
 @RequestMapping("/friendships")
 public class FriendshipController {
 	private final FriendshipService friendshipService;
+	private final FriendshipOptimisticLockService friendshipOptimisticLockService;
 
 	@PostMapping
 	public BaseResponse<Void> requestFriendship(
@@ -46,7 +48,7 @@ public class FriendshipController {
 		@AuthenticationPrincipal Long userId,
 		@PathVariable Long friendshipId
 	) {
-		friendshipService.acceptFriendship(userId, friendshipId);
+		friendshipOptimisticLockService.acceptFriendship(userId, friendshipId);
 		return new BaseResponse<>(null);
 	}
 
@@ -55,7 +57,7 @@ public class FriendshipController {
 		@AuthenticationPrincipal Long userId,
 		@PathVariable Long friendshipId
 	) {
-		friendshipService.rejectFriendship(userId, friendshipId);
+		friendshipOptimisticLockService.rejectFriendship(userId, friendshipId);
 		return new BaseResponse<>(null);
 	}
 
@@ -64,7 +66,7 @@ public class FriendshipController {
 		@AuthenticationPrincipal Long userId,
 		@PathVariable Long friendshipId
 	) {
-		friendshipService.cancelFriendship(userId, friendshipId);
+		friendshipOptimisticLockService.cancelFriendship(userId, friendshipId);
 		return new BaseResponse<>(null);
 	}
 

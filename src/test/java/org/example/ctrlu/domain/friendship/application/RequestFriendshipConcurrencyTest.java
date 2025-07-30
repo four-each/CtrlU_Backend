@@ -115,9 +115,6 @@ public class RequestFriendshipConcurrencyTest {
 				userA = userRepository.findById(userA.getId()).orElseThrow(() -> new RuntimeException("UserA not found after setup commit"));
 				userB = userRepository.findById(userB.getId()).orElseThrow(() -> new RuntimeException("UserB not found after setup commit"));
 
-				System.out.println("UserA ID in setUp (after commit): " + userA.getId());
-				System.out.println("UserB ID in setUp (after commit): " + userB.getId());
-
 				friendshipService.requestFriendship(userA.getId(), new FriendshipRequest(userB.getId()));
 			} catch (FriendshipException e) {
 				System.out.println(e.getExceptionStatus().getMessage());

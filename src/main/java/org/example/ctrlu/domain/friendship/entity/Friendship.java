@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
 import lombok.Builder;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.global.entity.BaseEntity;
@@ -57,6 +58,9 @@ public class Friendship extends BaseEntity {
 
 	@Column(nullable = false, updatable = false)
 	private Long user2Id;
+
+	@Version
+	private Long version;
 
 	@Builder
 	public Friendship(User fromUser, User toUser) {
