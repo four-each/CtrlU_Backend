@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.example.ctrlu.domain.user.dto.request.UpdatePasswordRequest;
 import org.example.ctrlu.domain.user.dto.request.UpdateProfileRequest;
 import org.example.ctrlu.domain.user.dto.response.GetProfileResponse;
+import org.example.ctrlu.domain.user.dto.response.SearchUsersResponse;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.exception.UserException;
 import org.example.ctrlu.domain.user.repository.UserRepository;
@@ -101,6 +102,43 @@ class UserServiceTest {
 		// then
 		assertThat("newNickname").isEqualTo(user.getNickname());
 		assertThat("profile/123.jpg").isEqualTo(user.getProfileImageKey());
+	}
+
+	@Test
+	@DisplayName("사용자 검색에 성공한다.")
+	void searchUsersByEmail_success_withValidKeyword() {
+		// Given
+		String keyword = "TestUser@Example.com ";
+		String expectedSearchKeyword = "testuser@example.com";
+
+		when(userRepository.searchByEmail(expectedSearchKeyword)).thenReturn(Optional.of(user));
+		when(awsS3Service.generateGetPresignedUrl(user.getProfileImageKey())).thenReturn("profile/123.jpg");
+
+		// When
+		SearchUsersResponse response = userService.searchUsersByEmail(keyword);
+
+		// Then
+		assertThat(response.id()).isEqualTo(user.getId());
+		assertThat(response.email()).isEqualTo(user.getEmail());
+		assertThat(response.nickname()).isEqualTo(user.getNickname());
+		assertThat(response.image()).isEqualTo(awsS3Service.generateGetPresignedUrl(user.getProfileImageKey()));
+	}
+
+	@Test
+	@DisplayName("사용자 검색 결과가 없는 경우 어떤 사용자도 반환하지 않는다.")
+	void searchUsersByEmail_throwsUserException_whenUserNotFound() {
+		// Given
+		String keyword = "nonexistent@example.com";
+		String expectedSearchKeyword = "nonexistent@example.com";
+
+		when(userRepository.searchByEmail(expectedSearchKeyword))
+			.thenReturn(Optional.empty());
+
+		// When
+		SearchUsersResponse searchUsersResponse = userService.searchUsersByEmail(keyword);
+
+		// Then
+		assertThat(searchUsersResponse).isNull();
 	}
 
 	@Test
