@@ -26,14 +26,6 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(
-	uniqueConstraints = {
-		@UniqueConstraint(
-			name = "uk_friendship_users",
-			columnNames = {"user1Id", "user2Id"}
-		)
-	}
-)
 public class Friendship extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,12 +45,6 @@ public class Friendship extends BaseEntity {
 	@JoinColumn(name = "to_user_id", nullable = false)
 	private User toUser;
 
-	@Column(nullable = false, updatable = false)
-	private Long user1Id;
-
-	@Column(nullable = false, updatable = false)
-	private Long user2Id;
-
 	@Version
 	private Long version;
 
@@ -67,14 +53,6 @@ public class Friendship extends BaseEntity {
 		this.fromUser = fromUser;
 		this.toUser = toUser;
 		this.status = FriendshipStatus.PENDING;
-
-		if (fromUser.getId() < toUser.getId()) {
-			this.user1Id = fromUser.getId();
-			this.user2Id = toUser.getId();
-		} else {
-			this.user1Id = toUser.getId();
-			this.user2Id = fromUser.getId();
-		}
 	}
 
 	public void accept() {

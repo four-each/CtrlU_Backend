@@ -3,14 +3,19 @@ package org.example.ctrlu.domain.friendship.application;
 import static org.assertj.core.api.Assertions.*;
 import static org.example.ctrlu.domain.friendship.exception.FriendshipErrorCode.*;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import org.example.ctrlu.config.TestMySQLConfig;
 import org.example.ctrlu.domain.friendship.dto.request.FriendshipRequest;
 import org.example.ctrlu.domain.friendship.entity.Friendship;
+import org.example.ctrlu.domain.friendship.entity.FriendshipStatus;
+import org.example.ctrlu.domain.friendship.exception.FriendshipErrorCode;
 import org.example.ctrlu.domain.friendship.exception.FriendshipException;
 import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
 import org.example.ctrlu.domain.user.entity.User;
@@ -37,7 +42,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class RequestFriendshipConcurrencyTest {
-	@Autowired private FriendshipService friendshipService;
+	@Autowired private FriendshipRedissonLockService friendshipRedissonLockService;
 	@Autowired private UserRepository userRepository;
 	@Autowired private FriendshipRepository friendshipRepository;
 	@Autowired private PlatformTransactionManager transactionManager;
@@ -99,66 +104,83 @@ public class RequestFriendshipConcurrencyTest {
 	@DisplayName("두 유저가 동시에 서로에게 친구 요청을 보낼 때, 하나의 요청만 성공하고 DB에는 하나의 관계만 저장된다.")
 	void requestFriendship_ConcurrencyTest() throws InterruptedException {
 		// given
+		final int NUMBER_OF_REQUESTS_PER_USER = 50;
 		int threadCount = 2;
 		ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
 		CountDownLatch readyLatch = new CountDownLatch(threadCount);
 		CountDownLatch finishLatch = new CountDownLatch(threadCount);
-		AtomicInteger exceptionCount = new AtomicInteger(0);
+		AtomicInteger successCount = new AtomicInteger(0);
+		AtomicInteger conflictCount = new AtomicInteger(0);
+		AtomicInteger otherExceptionCount = new AtomicInteger(0);
 
 		// when
-		// userA가 userB에게 친구 요청
-		executorService.submit(() -> {
-			try {
-				readyLatch.countDown();
-				readyLatch.await();
+		IntStream.range(0, NUMBER_OF_REQUESTS_PER_USER).forEach(i -> {
+			// userA가 userB에게 친구 요청
+			executorService.submit(() -> {
+				try {
+					readyLatch.countDown();
+					readyLatch.await();
 
-				userA = userRepository.findById(userA.getId()).orElseThrow(() -> new RuntimeException("UserA not found after setup commit"));
-				userB = userRepository.findById(userB.getId()).orElseThrow(() -> new RuntimeException("UserB not found after setup commit"));
-
-				friendshipService.requestFriendship(userA.getId(), new FriendshipRequest(userB.getId()));
-			} catch (FriendshipException e) {
-				System.out.println(e.getExceptionStatus().getMessage());
-				if (e.getExceptionStatus() == ALREADY_EXISTS_FRIENDSHIP) {
-					exceptionCount.incrementAndGet();
+					friendshipRedissonLockService.requestFriendshipWithLock(userA.getId(), new FriendshipRequest(userB.getId()));
+					successCount.incrementAndGet();
+				} catch (FriendshipException e) {
+					if (e.getExceptionStatus() == FriendshipErrorCode.FRIENDSHIP_REQUEST_CONFLICT) {
+						conflictCount.incrementAndGet();
+					} else {
+						System.err.println("Unexpected FriendshipException: " + e.getExceptionStatus());
+						otherExceptionCount.incrementAndGet();
+					}
+				} catch (Exception e) {
+					System.err.println("Unexpected exception: " + e.getMessage());
+					e.printStackTrace();
+					otherExceptionCount.incrementAndGet();
+				} finally {
+					finishLatch.countDown();
 				}
-			} catch (Exception e) {
-				System.out.println(e.getMessage());
-				e.printStackTrace();
-			} finally {
-				finishLatch.countDown();
-			}
+			});
+
+			// userB가 userA에게 친구 요청
+			executorService.submit(() -> {
+				try {
+					readyLatch.countDown();
+					readyLatch.await();
+
+					friendshipRedissonLockService.requestFriendshipWithLock(userB.getId(), new FriendshipRequest(userA.getId()));
+					successCount.incrementAndGet();
+				} catch (FriendshipException e) {
+					if (e.getExceptionStatus() == FriendshipErrorCode.FRIENDSHIP_REQUEST_CONFLICT) {
+						conflictCount.incrementAndGet();
+					} else {
+						System.err.println("Unexpected FriendshipException: " + e.getExceptionStatus());
+						otherExceptionCount.incrementAndGet();
+					}
+				} catch (Exception e) {
+					System.err.println("Unexpected exception: " + e.getMessage());
+					e.printStackTrace();
+					otherExceptionCount.incrementAndGet();
+				} finally {
+					finishLatch.countDown();
+				}
+			});
 		});
 
-		// userB가 userA에게 친구 요청
-		executorService.submit(() -> {
-			try {
-				readyLatch.countDown();
-				readyLatch.await();
-
-				friendshipService.requestFriendship(userB.getId(), new FriendshipRequest(userA.getId()));
-			} catch (FriendshipException e) {
-				System.out.println(e.getExceptionStatus().getMessage());
-				if (e.getExceptionStatus() == ALREADY_EXISTS_FRIENDSHIP) {
-					exceptionCount.incrementAndGet();
-				}
-			} catch (Exception e) {
-				System.out.println(e.getMessage());
-				e.printStackTrace();
-			} finally {
-				finishLatch.countDown();
-			}
-		});
-
-		finishLatch.await();
+		readyLatch.countDown();
+		finishLatch.await(10, TimeUnit.SECONDS);
 		executorService.shutdown();
+		executorService.awaitTermination(10, TimeUnit.SECONDS);
 
 		// then
+		System.out.println("Success Count: " + successCount.get());
+		System.out.println("Conflict Count: " + conflictCount.get());
+		System.out.println("Other Exception Count: " + otherExceptionCount.get());
+
 		long friendshipCount = friendshipRepository.count();
 		assertThat(friendshipCount).isEqualTo(1);
-		assertThat(exceptionCount.get()).isEqualTo(1);
 
 		Friendship savedFriendship = friendshipRepository.findAll().get(0);
-		assertThat(savedFriendship.getUser1Id()).isEqualTo(Math.min(userA.getId(), userB.getId()));
-		assertThat(savedFriendship.getUser2Id()).isEqualTo(Math.max(userA.getId(), userB.getId()));
+		assertThat(savedFriendship.getStatus()).isEqualTo(FriendshipStatus.PENDING);
+
+		assertThat(successCount.get()).isEqualTo(1);
+		assertThat(conflictCount.get() + otherExceptionCount.get()).isEqualTo(NUMBER_OF_REQUESTS_PER_USER*2-1);
 	}
 }

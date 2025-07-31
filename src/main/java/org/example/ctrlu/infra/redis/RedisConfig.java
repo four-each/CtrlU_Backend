@@ -1,5 +1,8 @@
 package org.example.ctrlu.infra.redis;
 
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +27,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 
     @Value("${spring.data.redis.host}")
     private String host;
+    private static final String REDISSON_PREFIX = "redis://";
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
@@ -61,5 +65,14 @@ public class RedisConfig extends CachingConfigurerSupport {
                 .fromConnectionFactory(redisConnectionFactory)
                 .cacheDefaults(redisCacheConfiguration)
                 .build();
+    }
+
+    @Bean
+    public RedissonClient redissonClient() {
+        Config config = new Config();
+        config.useSingleServer()
+            .setAddress(REDISSON_PREFIX + host + ":" + port);
+
+        return Redisson.create(config);
     }
 }

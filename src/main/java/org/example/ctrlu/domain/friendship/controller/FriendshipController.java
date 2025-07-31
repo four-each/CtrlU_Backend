@@ -1,6 +1,7 @@
 package org.example.ctrlu.domain.friendship.controller;
 
 import org.example.ctrlu.domain.friendship.application.FriendshipOptimisticLockService;
+import org.example.ctrlu.domain.friendship.application.FriendshipRedissonLockService;
 import org.example.ctrlu.domain.friendship.application.FriendshipService;
 import org.example.ctrlu.domain.friendship.dto.request.FriendshipRequest;
 import org.example.ctrlu.domain.friendship.dto.response.GetFriendshipListResponse;
@@ -24,13 +25,14 @@ import lombok.AllArgsConstructor;
 public class FriendshipController {
 	private final FriendshipService friendshipService;
 	private final FriendshipOptimisticLockService friendshipOptimisticLockService;
+	private final FriendshipRedissonLockService friendshipRedissonLockService;
 
 	@PostMapping
 	public BaseResponse<Void> requestFriendship(
 		@AuthenticationPrincipal Long userId,
 		@Valid @RequestBody FriendshipRequest request
 	) {
-		friendshipService.requestFriendship(userId, request);
+		friendshipRedissonLockService.requestFriendshipWithLock(userId, request);
 		return new BaseResponse<>(null);
 	}
 
