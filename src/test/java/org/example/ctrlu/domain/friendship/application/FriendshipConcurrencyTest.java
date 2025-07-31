@@ -3,20 +3,15 @@ package org.example.ctrlu.domain.friendship.application;
 import static org.assertj.core.api.Assertions.*;
 import static org.example.ctrlu.domain.friendship.exception.FriendshipErrorCode.*;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.example.ctrlu.config.TestMySQLConfig;
-import org.example.ctrlu.domain.friendship.dto.request.FriendshipRequest;
 import org.example.ctrlu.domain.friendship.entity.Friendship;
 import org.example.ctrlu.domain.friendship.entity.FriendshipStatus;
-import org.example.ctrlu.domain.friendship.exception.FriendshipErrorCode;
 import org.example.ctrlu.domain.friendship.exception.FriendshipException;
 import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
 import org.example.ctrlu.domain.user.entity.User;

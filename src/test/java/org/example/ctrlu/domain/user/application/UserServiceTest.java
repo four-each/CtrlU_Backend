@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import org.example.ctrlu.domain.user.dto.request.UpdatePasswordRequest;
 import org.example.ctrlu.domain.user.dto.request.UpdateProfileRequest;
+import org.example.ctrlu.domain.user.dto.response.GetProfileResponse;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.exception.UserException;
 import org.example.ctrlu.domain.user.repository.UserRepository;
@@ -102,4 +103,32 @@ class UserServiceTest {
 		assertThat("profile/123.jpg").isEqualTo(user.getProfileImageKey());
 	}
 
+	@Test
+	@DisplayName("프로필 조회 시 닉네임과 프로필 이미지 조회에 성공한다.")
+	void getProfile_ShouldSucceed() {
+		// Given
+		Long userId = 1L;
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+		when(awsS3Service.generateGetPresignedUrl(user.getProfileImageKey())).thenReturn("profile/123.jpg");
+
+		// When
+		GetProfileResponse response = userService.getProfile(userId);
+
+		// Then
+		assertThat(response.nickname()).isEqualTo(user.getNickname());
+		assertThat(response.profileImage()).isEqualTo(awsS3Service.generateGetPresignedUrl(user.getProfileImageKey()));
+	}
+
+	@Test
+	@DisplayName("존재하지 않는 사용자 ID로 프로필 조회 시 예외가 발생한다.")
+	void getProfile_throwsUserException_withNotFoundUserId() {
+		// Given
+		Long nonExistentUserId = 99L;
+		when(userRepository.findById(nonExistentUserId)).thenReturn(Optional.empty());
+
+		// When & Then
+		UserException userException = assertThrows(UserException.class,
+			() -> userService.getProfile(nonExistentUserId));
+		assertThat(NOT_FOUND_USER).isEqualTo(userException.getExceptionStatus());
+	}
 }
