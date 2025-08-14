@@ -31,7 +31,7 @@ services:
 
   backend:
     image: foureach/ctrlu-backend:latest
-    container_name: prod-spring-app
+    container_name: backend
     restart: unless-stopped
     env_file:
       - .env.prod
