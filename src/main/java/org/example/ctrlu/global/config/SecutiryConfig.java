@@ -50,7 +50,6 @@ public class SecutiryConfig {
 					"/auth/find-password",
 					"/auth/reset-password",
 					"/auth/presigned-url").permitAll()
-				.requestMatchers("/auth/logout", "/auth/withdraw").authenticated()
 				.anyRequest().authenticated()
 			)
 			.authenticationProvider(jwtAuthenticationProvider)

@@ -29,19 +29,6 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 	private static final String AUTHORIZATION = "Authorization";
 	private static final String AUTHORIZATION_PREFIX = "Bearer ";
 	private static final String SPLIT_REGEX = " ";
-	public static final String[] WHITE_LIST = {
-		"/auth/signup",
-		"/auth/signin",
-		"/auth/reissue",
-		"/auth/verify",
-		"/auth/find-password",
-		"/auth/reset-password",
-		"/auth/presigned-url"
-	};
-	private static final Set<String> EXCLUDE_PATHS = new HashSet<>(Arrays.asList(
-		"/error",
-		"/favicon.ico"
-	));
 
 	public JwtFilter(AuthenticationManager authenticationManager) {
 		super(new AntPathRequestMatcher("/**"));
@@ -66,7 +53,11 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 
 	private boolean isWhiteListed(HttpServletRequest request) {
 		String requestUri = request.getRequestURI();
-		return Arrays.asList(WHITE_LIST).contains(requestUri) || EXCLUDE_PATHS.contains(requestUri);
+		return !(requestUri.startsWith("/user") ||
+			requestUri.startsWith("/todos") ||
+			requestUri.startsWith("/friendships") ||
+			requestUri.matches("/auth/logout") ||
+			requestUri.matches("/auth/withdraw"));
 	}
 
 	@Override
