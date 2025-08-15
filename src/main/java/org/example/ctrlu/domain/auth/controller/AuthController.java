@@ -37,8 +37,8 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 	private final AuthService authService;
 	private final AwsS3Service awsS3Service;
-	private static final String LOGIN_URL = "http://ctrlu.site/auth/verification-complete";
-	private static final String ERROR_URL = "http://ctrlu.site/auth/verification-error";
+	private static final String LOGIN_URL = "https://ctrlu.site/auth/verification-complete";
+	private static final String ERROR_URL = "https://ctrlu.site/auth/verification-error";
 	private static final String RESET_PASSWORD_URL = "http://ctrlu.site/reset-password";
 	private static final String COOKIE_REFRESHTOKEN = "refreshToken=";
 	private static final String COOKIE_NAME_REFRESHTOKEN = "refreshToken";

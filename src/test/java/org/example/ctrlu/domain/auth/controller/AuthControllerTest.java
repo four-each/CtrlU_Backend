@@ -39,8 +39,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class AuthControllerTest {
-	private static final String LOGIN_URL = "http://ctrlu.site/login";
-	private static final String ERROR_URL = "http://ctrlu.site/error";
+	private static final String LOGIN_URL = "https://ctrlu.site/auth/verification-complete";
+	private static final String ERROR_URL = "https://ctrlu.site/auth/verification-error";
 	@Autowired
 	private MockMvc mockMvc;
 	@MockitoBean
