@@ -16,7 +16,6 @@ import org.example.ctrlu.domain.auth.util.JWTUtil;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.entity.UserStatus;
 import org.example.ctrlu.domain.user.repository.UserRepository;
-import org.example.ctrlu.global.s3.AwsS3Service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,7 +35,6 @@ public class AuthService {
 	private final UserRepository userRepository;
 	private final RedisTokenRepository redisTokenRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final AwsS3Service awsS3Service;
 	private final MailService mailService;
 	private final JWTUtil jwtUtil;
 
