@@ -15,7 +15,7 @@ public class WebConfig implements WebMvcConfigurer {
 	@Override
 	public void addCorsMappings(final CorsRegistry registry) {
 		registry.addMapping("/**")
-			.allowedOrigins("https://ctrlu.site")
+			.allowedOrigins("https://www.ctrlu.site")
 			.allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
 			.allowedHeaders("Authorization", "Content-Type", "Accept")
 			.exposedHeaders("Authorization", "Set-Cookie")
@@ -26,7 +26,7 @@ public class WebConfig implements WebMvcConfigurer {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowedOrigins(List.of("https://ctrlu.site"));
+		config.setAllowedOrigins(List.of("https://www.ctrlu.site"));
 		config.setAllowedMethods(List.of("GET","POST","PUT","DELETE", "PATCH", "OPTIONS"));
 		config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 		config.setAllowCredentials(true);
