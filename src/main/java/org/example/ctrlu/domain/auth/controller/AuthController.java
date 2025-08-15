@@ -42,7 +42,7 @@ public class AuthController {
 	private static final String RESET_PASSWORD_URL = "http://ctrlu.site/reset-password";
 	private static final String COOKIE_REFRESHTOKEN = "refreshToken=";
 	private static final String COOKIE_NAME_REFRESHTOKEN = "refreshToken";
-	private static final String COOKIE_FLAGS = "; Path=/; HttpOnly; Secure; ";
+	private static final String COOKIE_FLAGS = "; Path=/; Domain=.ctrlu.site; HttpOnly; Secure; ";
 	private static final String COOKIE_MAXAGE = "Max-Age=";
 	private static final Long REFRESHTOKEN_EXPIRATION_TIME = 60 * 60 * 24 * 7L; // 7일
 	private static final String COOKIE_SAMESITE = "; SameSite=None";
