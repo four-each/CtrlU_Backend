@@ -45,3 +45,7 @@ cloud:
 
 jwt:
   secret: NQXmgabxyOmV03yFEujEV2cCSmsE7J6a
+
+server:
+  cookie:
+    domain: FAKE

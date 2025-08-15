@@ -25,6 +25,10 @@ cloud:
 jwt:
   secret: ${JWT_SECRET_KEY}
 
+server:
+  cookie:
+    domain: "Domain=.ctrlu.site;"
+
 ---
 
 spring:

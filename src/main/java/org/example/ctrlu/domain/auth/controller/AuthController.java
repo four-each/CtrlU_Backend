@@ -12,6 +12,7 @@ import org.example.ctrlu.domain.auth.dto.response.SigninResponse;
 import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
 import org.example.ctrlu.global.response.BaseResponse;
 import org.example.ctrlu.global.s3.AwsS3Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -42,7 +43,9 @@ public class AuthController {
 	private static final String RESET_PASSWORD_URL = "http://ctrlu.site/reset-password";
 	private static final String COOKIE_REFRESHTOKEN = "refreshToken=";
 	private static final String COOKIE_NAME_REFRESHTOKEN = "refreshToken";
-	private static final String COOKIE_FLAGS = "; Path=/; Domain=.ctrlu.site; HttpOnly; Secure; ";
+	private static final String COOKIE_FLAGS = "; Path=/; HttpOnly; Secure; ";
+	@Value("${server.cookie.domain}")
+	private String COOKIE_DOMAIN;
 	private static final String COOKIE_MAXAGE = "Max-Age=";
 	private static final Long REFRESHTOKEN_EXPIRATION_TIME = 60 * 60 * 24 * 7L; // 7일
 	private static final String COOKIE_SAMESITE = "; SameSite=None";
@@ -79,6 +82,7 @@ public class AuthController {
 			COOKIE_REFRESHTOKEN
 				+ tokenInfo.refreshToken()
 				+ COOKIE_FLAGS
+				+ COOKIE_DOMAIN
 				+ COOKIE_MAXAGE
 				+ REFRESHTOKEN_EXPIRATION_TIME
 				+ COOKIE_SAMESITE);
@@ -93,6 +97,7 @@ public class AuthController {
 			COOKIE_REFRESHTOKEN
 				+ tokenInfo.refreshToken()
 				+ COOKIE_FLAGS
+				+ COOKIE_DOMAIN
 				+ COOKIE_MAXAGE
 				+ REFRESHTOKEN_EXPIRATION_TIME
 				+ COOKIE_SAMESITE);
