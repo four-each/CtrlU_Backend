@@ -53,6 +53,11 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 
 	private boolean isWhiteListed(HttpServletRequest request) {
 		String requestUri = request.getRequestURI();
+
+		if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+			return true;
+		}
+
 		return !(requestUri.startsWith("/user") ||
 			requestUri.startsWith("/todos") ||
 			requestUri.startsWith("/friendships") ||
