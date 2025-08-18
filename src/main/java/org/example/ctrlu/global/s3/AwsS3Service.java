@@ -36,10 +36,12 @@ public class AwsS3Service {
 		try {
 			String fileName = request.imageType().getPath() + "/" + UUID.randomUUID() + request.fileExtension();
 
+			log.info("Generating Presigned URL with Content-Type: '{}'", request.contentType());
+
 			PutObjectRequest objectRequest = PutObjectRequest.builder()
 				.bucket(bucketName)
 				.key(fileName)
-				.contentType("multipart/form-data")
+				.contentType(request.contentType())
 				.build();
 
 			PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()

@@ -4,6 +4,7 @@ import org.example.ctrlu.global.s3.ImagePath;
 
 public record GetPresignedUrlRequest(
 	ImagePath imageType,
-	String fileExtension
+	String fileExtension,
+	String contentType
 ) {
 }
