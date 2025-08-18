@@ -39,6 +39,7 @@ public class AwsS3Service {
 			PutObjectRequest objectRequest = PutObjectRequest.builder()
 				.bucket(bucketName)
 				.key(fileName)
+				.contentType(request.contentType())
 				.build();
 
 			PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
