@@ -37,7 +37,7 @@ class AuthServiceTest {
 	public static final String ENCODED_PASSWORD = "encoded_password";
 	public static final String REFRESH_TOKEN = "valid_refreshtoken";
 	private static final Long EXPIRATION_TIME = 300000L;
-	private static final Long ACCESSTOKEN_EXPIRATION_TIME = (60 * 1000L) * 30; // 30분
+	private static final Long ACCESSTOKEN_EXPIRATION_TIME = 60 * 1000L; // 1분
 	private static final Long REFRESHTOKEN_EXPIRATION_TIME = (60 * 1000L) * 60 * 24 * 7; // 7일
 
 	@InjectMocks
