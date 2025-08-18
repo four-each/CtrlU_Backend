@@ -51,9 +51,9 @@ public class AuthController {
 	private static final String COOKIE_SAMESITE = "; SameSite=None";
 
 	@PostMapping("/presigned-url")
-	public ResponseEntity<PresignedUrlResponse> getPresignedUrl(@RequestBody @Valid GetPresignedUrlRequest request) {
+	public BaseResponse<PresignedUrlResponse> getPresignedUrl(@RequestBody @Valid GetPresignedUrlRequest request) {
 		PresignedUrlResponse response = awsS3Service.generatePutPresignedUrl(request);
-		return ResponseEntity.ok(response);
+		return new BaseResponse<>(response);
 	}
 
 	@PostMapping("/signup")
