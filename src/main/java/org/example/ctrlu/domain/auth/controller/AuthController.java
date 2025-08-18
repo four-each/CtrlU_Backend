@@ -45,7 +45,7 @@ public class AuthController {
 	private static final String COOKIE_NAME_REFRESHTOKEN = "refreshToken";
 	private static final String COOKIE_FLAGS = "; Path=/; HttpOnly; Secure; ";
 	@Value("${server.cookie.domain}")
-	private static String COOKIE_DOMAIN;
+	private String COOKIE_DOMAIN;
 	private static final String COOKIE_MAXAGE = "Max-Age=";
 	private static final Long REFRESHTOKEN_EXPIRATION_TIME = 60 * 60 * 24 * 7L; // 7일
 	private static final String COOKIE_SAMESITE = "; SameSite=None";
@@ -128,7 +128,7 @@ public class AuthController {
 		return new BaseResponse<>(null);
 	}
 
-	private static void clearCookie(HttpServletResponse response) {
+	private void clearCookie(HttpServletResponse response) {
 		String cookie = "refreshToken=; Path=/;" + COOKIE_DOMAIN + "HttpOnly; Secure; Max-Age=0; SameSite=None;";
 		response.setHeader("Set-Cookie", cookie);
 		response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
