@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.example.ctrlu.domain.friendship.dto.request.FriendshipRequest;
 import org.example.ctrlu.domain.friendship.dto.response.FriendResponse;
@@ -17,6 +18,7 @@ import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.entity.UserStatus;
 import org.example.ctrlu.domain.user.repository.UserRepository;
+import org.example.ctrlu.global.s3.AwsS3Service;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,7 @@ public class FriendshipService {
 
 	private final FriendshipRepository friendshipRepository;
 	private final UserRepository userRepository;
+	private final AwsS3Service awsS3Service;
 
 	@Transactional
 	public void requestFriendship(Long userId, FriendshipRequest request) {
@@ -133,18 +136,29 @@ public class FriendshipService {
 	@Transactional(readOnly = true)
 	public GetFriendshipListResponse getFriends(Long userId) {
 		List<FriendResponse> friends = friendshipRepository.getFriendsOf(userId);
-		return GetFriendshipListResponse.from(friends);
+		List<FriendResponse> friendResponses = friends.stream()
+			.map(friendResponse -> FriendResponse.from(friendResponse, awsS3Service))
+			.toList();
+
+		return GetFriendshipListResponse.from(friendResponses);
 	}
 
 	@Transactional(readOnly = true)
 	public GetFriendshipListResponse getReceivedRequests(Long userId) {
 		List<FriendResponse> receivedRequests = friendshipRepository.getReceivedRequestsOf(userId);
-		return GetFriendshipListResponse.from(receivedRequests);
+		List<FriendResponse> receivedRequestList = receivedRequests.stream()
+			.map(friendResponse -> FriendResponse.from(friendResponse, awsS3Service))
+			.toList();
+
+		return GetFriendshipListResponse.from(receivedRequestList);
 	}
 
 	@Transactional(readOnly = true)
 	public GetFriendshipListResponse getSentRequests(Long userId) {
 		List<FriendResponse> sentRequests = friendshipRepository.getSentRequestsOf(userId);
-		return GetFriendshipListResponse.from(sentRequests);
+		List<FriendResponse> sentRequestList = sentRequests.stream()
+			.map(friendResponse -> FriendResponse.from(friendResponse, awsS3Service))
+			.toList();
+		return GetFriendshipListResponse.from(sentRequestList);
 	}
 }

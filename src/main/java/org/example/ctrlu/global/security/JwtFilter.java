@@ -98,7 +98,7 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 	private void setErrorResponse(HttpServletResponse response, String message) throws IOException {
 		log.warn("인증/인가 오류 발생: {}", message);
 
-		response.setHeader("Access-Control-Allow-Origin", "https://www.ctrlu.site"); // ⚠️ 실제 프론트엔드 도메인으로 변경하세요.
+		response.setHeader("Access-Control-Allow-Origin", "https://www.ctrlu.site");
 		response.setHeader("Access-Control-Allow-Credentials", "true");
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		response.setContentType(CONTENT_TYPE);

@@ -10,6 +10,7 @@ import java.util.List;
 import org.example.ctrlu.domain.friendship.dto.response.FriendResponse;
 import org.example.ctrlu.domain.friendship.dto.response.GetFriendshipListResponse;
 import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
+import org.example.ctrlu.global.s3.AwsS3Service;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +24,8 @@ public class GetFriendshipServiceTest {
 	private FriendshipService friendshipService;
 	@Mock
 	private FriendshipRepository friendshipRepository;
+	@Mock
+	private AwsS3Service awsS3Service;
 	private final Long USER_ID = 1L;
 
 	@Test
