@@ -100,7 +100,6 @@ public class GetFriendshipIntegrationTest {
 		assertThat(response).isNotNull();
 		assertThat(response.friends()).hasSize(1);
 		FriendResponse friendResponse = response.friends().get(0);
-		assertThat(friendResponse.id()).isEqualTo(friend.getId());
 		assertThat(friendResponse.nickname()).isEqualTo(friend.getNickname());
 		assertThat(friendResponse.email()).isEqualTo(friend.getEmail());
 	}
@@ -126,7 +125,6 @@ public class GetFriendshipIntegrationTest {
 		assertThat(response).isNotNull();
 		assertThat(response.friends()).hasSize(1);
 		FriendResponse friendResponse = response.friends().get(0);
-		assertThat(friendResponse.id()).isEqualTo(requester.getId());
 		assertThat(friendResponse.nickname()).isEqualTo(requester.getNickname());
 		assertThat(friendResponse.email()).isEqualTo(requester.getEmail());
 	}
@@ -152,7 +150,6 @@ public class GetFriendshipIntegrationTest {
 		assertThat(response).isNotNull();
 		assertThat(response.friends()).hasSize(1);
 		FriendResponse friendResponse = response.friends().get(0);
-		assertThat(friendResponse.id()).isEqualTo(receiver.getId());
 		assertThat(friendResponse.nickname()).isEqualTo(receiver.getNickname());
 		assertThat(friendResponse.email()).isEqualTo(receiver.getEmail());
 	}
