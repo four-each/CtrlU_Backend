@@ -46,8 +46,9 @@ public class JWTUtil {
 		}
 	}
 
-	public String createAccessToken(Long userId, Long expirationTime) {
+	public String createAccessToken(Long userId, String role, Long expirationTime) {
 		return Jwts.builder()
+			.claim("role", role)
 			.subject(String.valueOf(userId))
 			.issuedAt(new Date(System.currentTimeMillis()))
 			.expiration(new Date(System.currentTimeMillis() + expirationTime))
@@ -72,6 +73,15 @@ public class JWTUtil {
 			.getSubject();
 
 		return Long.parseLong(userId);
+	}
+
+	public String getRoleFromToken(String token) {
+		return Jwts.parser()
+			.verifyWith(secretKey)
+			.build()
+			.parseSignedClaims(token)
+			.getPayload()
+			.get("role", String.class);
 	}
 
 }

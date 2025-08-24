@@ -30,6 +30,19 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 	private static final String AUTHORIZATION_PREFIX = "Bearer ";
 	private static final String SPLIT_REGEX = " ";
 
+	private static final Set<String> WHITE_LIST = new HashSet<>(
+		Arrays.asList(
+			"/auth/signup",
+			"/auth/signin",
+			"/auth/reissue",
+			"/auth/verify",
+			"/auth/find-password",
+			"/auth/reset-password",
+			"/auth/presigned-url",
+				"/actuator/prometheus"
+		)
+	);
+
 	public JwtFilter(AuthenticationManager authenticationManager) {
 		super(new AntPathRequestMatcher("/**"));
 		setAuthenticationManager(authenticationManager);
@@ -58,11 +71,7 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 			return true;
 		}
 
-		return !(requestUri.startsWith("/user") ||
-			requestUri.startsWith("/todos") ||
-			requestUri.startsWith("/friendships") ||
-			requestUri.matches("/auth/logout") ||
-			requestUri.matches("/auth/withdraw"));
+		return WHITE_LIST.contains(requestUri);
 	}
 
 	@Override

@@ -14,7 +14,7 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
-      - backend-net
+      - app-net
 
   redis:
     image: redis:7
@@ -23,7 +23,7 @@ services:
     ports:
       - "6378:6379"
     networks:
-      - backend-net
+      - app-net
 
   spring:
     build:
@@ -40,11 +40,35 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: local
     networks:
-      - backend-net
+      - app-net
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - app-net
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - app-net
 
 volumes:
   mysql-data:
+  grafana_data:
 
 networks:
-  backend-net:
+  app-net:
     driver: bridge
