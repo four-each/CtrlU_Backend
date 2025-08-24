@@ -36,10 +36,15 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
 			throw new BadCredentialsException("유효하지 않은 토큰입니다.");
 		}
 
+		String roleFromToken = jwtUtil.getRoleFromToken(token);
+		if (roleFromToken == null) {
+			throw new BadCredentialsException("유효하지 않은 토큰입니다.");
+		}
+
 		User user = userRepository.findByIdAndStatus(userIdFromToken, UserStatus.ACTIVE)
 			.orElseThrow(() -> new BadCredentialsException("존재하지 않거나 비활성화된 사용자의 토큰입니다."));
 
-		List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(ROLE_USER));
+		List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(roleFromToken));
 		return new JwtAuthenticationToken(user.getId(), authorities);
 	}
 

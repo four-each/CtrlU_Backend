@@ -142,7 +142,7 @@ public class AuthService {
 	}
 
 	private TokenInfo getTokenInfo(User user) {
-		String accessToken = jwtUtil.createAccessToken(user.getId(), ACCESSTOKEN_EXPIRATION_TIME);
+		String accessToken = jwtUtil.createAccessToken(user.getId(), user.getRole().getKey(), ACCESSTOKEN_EXPIRATION_TIME);
 		String refreshToken = jwtUtil.createRefreshToken(REFRESHTOKEN_EXPIRATION_TIME);
 		redisTokenRepository.saveRefreshToken(refreshToken, user.getId(), REFRESHTOKEN_EXPIRATION_TIME);
 		return new TokenInfo(accessToken, refreshToken);

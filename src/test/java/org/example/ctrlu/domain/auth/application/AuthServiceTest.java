@@ -233,7 +233,7 @@ class AuthServiceTest {
 		when(jwtUtil.isExpired(REFRESH_TOKEN)).thenReturn(false);
 		when(redisTokenRepository.getUserIdFromRefreshToken(REFRESH_TOKEN)).thenReturn(userId);
 		when(userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)).thenReturn(Optional.of(user));
-		when(jwtUtil.createAccessToken(userId, ACCESSTOKEN_EXPIRATION_TIME)).thenReturn(newAccessToken);
+		when(jwtUtil.createAccessToken(anyLong(), anyString(), anyLong())).thenReturn(newAccessToken);
 		when(jwtUtil.createRefreshToken(REFRESHTOKEN_EXPIRATION_TIME)).thenReturn(newRefreshToken);
 
 		// when

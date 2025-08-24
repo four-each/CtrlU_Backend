@@ -39,6 +39,10 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private UserStatus status;
 
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private Role role;
+
 	@Builder
 	public User(String email, String password, String nickname, String profileImageKey, String verifyToken) {
 		this.email = email;
@@ -47,6 +51,7 @@ public class User extends BaseEntity {
 		this.profileImageKey = profileImageKey;
 		this.verifyToken = verifyToken;
 		this.status = UserStatus.NONCERTIFIED;
+		this.role = Role.USER;
 	}
 
 	public void restore(String password, String nickname, String profileImageKey, String verifyToken) {
@@ -55,6 +60,7 @@ public class User extends BaseEntity {
 		this.profileImageKey = profileImageKey;
 		this.verifyToken = verifyToken;
 		this.status = UserStatus.NONCERTIFIED;
+		this.role = Role.USER;
 	}
 
 	public void changeUserStatusToActive() {

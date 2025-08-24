@@ -50,6 +50,7 @@ public class SecutiryConfig {
 					"/auth/find-password",
 					"/auth/reset-password",
 					"/auth/presigned-url").permitAll()
+				.requestMatchers("/actuator/**").hasRole("ADMIN")
 				.anyRequest().authenticated()
 			)
 			.authenticationProvider(jwtAuthenticationProvider)
