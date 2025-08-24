@@ -68,6 +68,7 @@ dependencies {
 
     // Prometheus
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 
     // Test
     testImplementation "org.testcontainers:mysql:1.19.8"
