@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -49,9 +50,9 @@ public class SecutiryConfig {
 					"/auth/verify",
 					"/auth/find-password",
 					"/auth/reset-password",
+					"/actuator/**",
 					"/auth/presigned-url").permitAll()
-				.requestMatchers("/actuator/**").hasRole("ADMIN")
-				.anyRequest().authenticated()
+					.anyRequest().authenticated()
 			)
 			.authenticationProvider(jwtAuthenticationProvider)
 			.addFilterBefore(

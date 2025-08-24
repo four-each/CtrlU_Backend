@@ -38,7 +38,8 @@ public class JwtFilter extends AbstractAuthenticationProcessingFilter {
 			"/auth/verify",
 			"/auth/find-password",
 			"/auth/reset-password",
-			"/auth/presigned-url"
+			"/auth/presigned-url",
+				"/actuator/prometheus"
 		)
 	);
 
