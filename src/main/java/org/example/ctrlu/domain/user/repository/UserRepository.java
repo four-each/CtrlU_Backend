@@ -21,16 +21,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     String getImageById(@Param("id") Long id);
 
 	@Query("""
-    	SELECT u FROM User u
-    	WHERE LOWER(u.email) LIKE CONCAT(:keyword, '%@%')
-    	ORDER BY u.id ASC
-    """)
-	Slice<User> findByEmailStartsWithFirstPage(@Param("keyword") String keyword, Pageable pageable);
+		SELECT u FROM User u
+		WHERE (:cursorId IS NULL OR u.id > :cursorId)
+		  AND LOWER(u.email) LIKE CONCAT(:keyword, '%@%')
+		ORDER BY u.id ASC
+	""")
+	Slice<User> findByEmailWithCursor(
+		@Param("keyword") String keyword,
+		@Param("cursorId") Long cursorId,
+		Pageable pageable
+	);
 
-	@Query("""
-    	SELECT u FROM User u
-    	WHERE u.id > :cursorId AND LOWER(u.email) LIKE CONCAT(:keyword, '%@%')
-    	ORDER BY u.id ASC
-    """)
-	Slice<User> findByEmailStartsWithNextPage(@Param("keyword") String keyword, @Param("cursorId") Long cursorId, Pageable pageable);
 }
