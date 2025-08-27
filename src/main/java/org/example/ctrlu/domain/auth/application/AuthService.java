@@ -9,6 +9,7 @@ import org.example.ctrlu.domain.auth.dto.request.FindPasswordRequest;
 import org.example.ctrlu.domain.auth.dto.request.ResetPasswordRequest;
 import org.example.ctrlu.domain.auth.dto.request.SigninRequest;
 import org.example.ctrlu.domain.auth.dto.request.SignupRequest;
+import org.example.ctrlu.domain.auth.dto.response.FindPasswordResponse;
 import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
 import org.example.ctrlu.domain.auth.exception.AuthException;
 import org.example.ctrlu.domain.auth.repository.RedisTokenRepository;
@@ -171,12 +172,13 @@ public class AuthService {
 	}
 
 	@Transactional
-	public void findPassword(FindPasswordRequest request) {
+	public FindPasswordResponse findPassword(FindPasswordRequest request) {
 		User user = userRepository.findByEmailAndStatus(request.email(), UserStatus.ACTIVE)
 			.orElseThrow(() -> new AuthException(NOT_FOUND_USER));
 
 		user.updateVerifyToken(jwtUtil.createVerifyToken(VERIFYTOKEN_EXPIRATION_TIME));
 		mailService.sendFindPasswordEmail(user);
+		return new FindPasswordResponse(user.getNickname());
 	}
 
 	@Transactional(readOnly = true)

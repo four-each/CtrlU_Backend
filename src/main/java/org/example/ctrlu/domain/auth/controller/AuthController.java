@@ -7,6 +7,7 @@ import org.example.ctrlu.domain.auth.dto.request.GetPresignedUrlRequest;
 import org.example.ctrlu.domain.auth.dto.request.ResetPasswordRequest;
 import org.example.ctrlu.domain.auth.dto.request.SigninRequest;
 import org.example.ctrlu.domain.auth.dto.request.SignupRequest;
+import org.example.ctrlu.domain.auth.dto.response.FindPasswordResponse;
 import org.example.ctrlu.domain.auth.dto.response.PresignedUrlResponse;
 import org.example.ctrlu.domain.auth.dto.response.SigninResponse;
 import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
@@ -40,7 +41,7 @@ public class AuthController {
 	private final AwsS3Service awsS3Service;
 	private static final String LOGIN_URL = "https://ctrlu.site/auth/verification-complete";
 	private static final String ERROR_URL = "https://ctrlu.site/auth/verification-error";
-	private static final String RESET_PASSWORD_URL = "http://ctrlu.site/reset-password";
+	private static final String RESET_PASSWORD_URL = "https://ctrlu.site/auth/reset-password";
 	private static final String COOKIE_REFRESHTOKEN = "refreshToken=";
 	private static final String COOKIE_NAME_REFRESHTOKEN = "refreshToken";
 	private static final String COOKIE_FLAGS = "; Path=/; HttpOnly; Secure; ";
@@ -137,9 +138,8 @@ public class AuthController {
 	}
 
 	@PostMapping("/find-password")
-	public BaseResponse<Void> findPassword(@Valid @RequestBody FindPasswordRequest request) {
-		authService.findPassword(request);
-		return new BaseResponse<>(null);
+	public BaseResponse<FindPasswordResponse> findPassword(@Valid @RequestBody FindPasswordRequest request) {
+		return new BaseResponse<>(authService.findPassword(request));
 	}
 
 	@GetMapping("/reset-password")
