@@ -41,7 +41,7 @@ public class AuthController {
 	private final AwsS3Service awsS3Service;
 	private static final String LOGIN_URL = "https://ctrlu.site/auth/verification-complete";
 	private static final String ERROR_URL = "https://ctrlu.site/auth/verification-error";
-	private static final String RESET_PASSWORD_URL = "https://ctrlu.site/auth/reset-password";
+	private static final String RESET_PASSWORD_URL = "https://ctrlu.site/auth/reset-password?token=";
 	private static final String COOKIE_REFRESHTOKEN = "refreshToken=";
 	private static final String COOKIE_NAME_REFRESHTOKEN = "refreshToken";
 	private static final String COOKIE_FLAGS = "; Path=/; HttpOnly; Secure; ";
@@ -147,7 +147,7 @@ public class AuthController {
 		boolean isComplete = authService.verifyResetToken(token);
 
 		if (isComplete) {
-			return new RedirectView(RESET_PASSWORD_URL);
+			return new RedirectView(RESET_PASSWORD_URL+token);
 		} else {
 			return new RedirectView(ERROR_URL);  // 링크 만료 페이지로 이동
 		}
