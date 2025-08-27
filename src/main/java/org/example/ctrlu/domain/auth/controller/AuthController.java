@@ -1,8 +1,5 @@
 package org.example.ctrlu.domain.auth.controller;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 import org.example.ctrlu.domain.auth.application.AuthService;
 import org.example.ctrlu.domain.auth.dto.request.DeleteUserRequest;
 import org.example.ctrlu.domain.auth.dto.request.FindPasswordRequest;
@@ -36,12 +33,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
-@Slf4j
 public class AuthController {
 	private final AuthService authService;
 	private final AwsS3Service awsS3Service;
@@ -154,7 +149,7 @@ public class AuthController {
 
 		if (isComplete) {
 			String redirectUrl = "https://ctrlu.site/auth/reset-password?token=" + token;
-			log.info("Redirecting to: " + redirectUrl);
+			System.out.println("Redirecting to: " + redirectUrl);
 			return ResponseEntity.status(HttpStatus.FOUND)
 				.header("Location", redirectUrl)
 				.build();
