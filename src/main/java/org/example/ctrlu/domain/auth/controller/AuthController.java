@@ -146,14 +146,18 @@ public class AuthController {
 	@GetMapping("/reset-password")
 	public Object verifyResetToken(@RequestParam("token") String token, HttpServletResponse response) {
 		boolean isComplete = authService.verifyResetToken(token);
-
+		String redirectUrl = "https://ctrlu.site/auth/reset-password?token=" + token;
+		System.out.println("Redirecting to: " + redirectUrl);
+		System.out.println(isComplete);
 		if (isComplete) {
-			String redirectUrl = "https://ctrlu.site/auth/reset-password?token=" + token;
 			System.out.println("Redirecting to: " + redirectUrl);
+			System.out.println(isComplete);
 			return ResponseEntity.status(HttpStatus.FOUND)
 				.header("Location", redirectUrl)
 				.build();
 		} else {
+			System.out.println("Redirecting to error: " + redirectUrl);
+			System.out.println("error: " + isComplete);
 			return new RedirectView(ERROR_URL);  // 링크 만료 페이지로 이동
 		}
 	}
