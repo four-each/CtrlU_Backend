@@ -36,10 +36,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
+@Slf4j
 public class AuthController {
 	private final AuthService authService;
 	private final AwsS3Service awsS3Service;
@@ -151,14 +153,11 @@ public class AuthController {
 		boolean isComplete = authService.verifyResetToken(token);
 
 		if (isComplete) {
-			// URL 인코딩 처리
-			String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8);
-			String redirectUrl = RESET_PASSWORD_URL + encodedToken;
-
-			// 리다이렉트 헤더 설정
-			response.setHeader("Location", redirectUrl);
-			response.setStatus(HttpStatus.FOUND.value());
-			return null;
+			String redirectUrl = "https://ctrlu.site/auth/reset-password?token=" + token;
+			log.info("Redirecting to: " + redirectUrl);
+			return ResponseEntity.status(HttpStatus.FOUND)
+				.header("Location", redirectUrl)
+				.build();
 		} else {
 			return new RedirectView(ERROR_URL);  // 링크 만료 페이지로 이동
 		}
