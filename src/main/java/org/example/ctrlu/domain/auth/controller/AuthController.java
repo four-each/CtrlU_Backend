@@ -1,5 +1,8 @@
 package org.example.ctrlu.domain.auth.controller;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import org.example.ctrlu.domain.auth.application.AuthService;
 import org.example.ctrlu.domain.auth.dto.request.DeleteUserRequest;
 import org.example.ctrlu.domain.auth.dto.request.FindPasswordRequest;
@@ -15,6 +18,7 @@ import org.example.ctrlu.global.response.BaseResponse;
 import org.example.ctrlu.global.s3.AwsS3Service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -143,11 +147,18 @@ public class AuthController {
 	}
 
 	@GetMapping("/reset-password")
-	public Object verifyResetToken(@RequestParam("token") String token) {
+	public Object verifyResetToken(@RequestParam("token") String token, HttpServletResponse response) {
 		boolean isComplete = authService.verifyResetToken(token);
 
 		if (isComplete) {
-			return new RedirectView(RESET_PASSWORD_URL+token);
+			// URL 인코딩 처리
+			String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8);
+			String redirectUrl = RESET_PASSWORD_URL + encodedToken;
+
+			// 리다이렉트 헤더 설정
+			response.setHeader("Location", redirectUrl);
+			response.setStatus(HttpStatus.FOUND.value());
+			return null;
 		} else {
 			return new RedirectView(ERROR_URL);  // 링크 만료 페이지로 이동
 		}
