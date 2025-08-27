@@ -1,5 +1,9 @@
 package org.example.ctrlu.domain.auth.controller;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import org.example.ctrlu.domain.auth.application.AuthService;
 import org.example.ctrlu.domain.auth.dto.request.DeleteUserRequest;
 import org.example.ctrlu.domain.auth.dto.request.FindPasswordRequest;
@@ -33,10 +37,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
+@Slf4j
 public class AuthController {
 	private final AuthService authService;
 	private final AwsS3Service awsS3Service;
@@ -145,21 +151,27 @@ public class AuthController {
 
 	@GetMapping("/reset-password")
 	public Object verifyResetToken(@RequestParam("token") String token, HttpServletResponse response) {
-		boolean isComplete = authService.verifyResetToken(token);
-		String redirectUrl = "https://ctrlu.site/auth/reset-password?token=" + token;
-		System.out.println("Redirecting to: " + redirectUrl);
-		System.out.println(isComplete);
-		if (isComplete) {
-			System.out.println("Redirecting to: " + redirectUrl);
-			System.out.println(isComplete);
-			return ResponseEntity.status(HttpStatus.FOUND)
-				.header("Location", redirectUrl)
-				.build();
-		} else {
-			System.out.println("Redirecting to error: " + redirectUrl);
-			System.out.println("error: " + isComplete);
-			return new RedirectView(ERROR_URL);  // 링크 만료 페이지로 이동
+		try {
+			boolean isComplete = authService.verifyResetToken(token);
+			String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8.toString());
+			String redirectUrl = "https://ctrlu.site/auth/reset-password?token=" + encodedToken;
+			log.info("Redirecting to: " + redirectUrl);
+			log.info(isComplete+"");
+			if (isComplete) {
+				log.info("Redirecting to: " + redirectUrl);
+				log.info(isComplete+"");
+				return ResponseEntity.status(HttpStatus.FOUND)
+					.header("Location", redirectUrl)
+					.build();
+			} else {
+				log.info("Redirecting to error: " + redirectUrl);
+				log.info("error: " + isComplete);
+				return new RedirectView(ERROR_URL);  // 링크 만료 페이지로 이동
+			}
+		} catch (Exception e) {
+			return new RedirectView(ERROR_URL);
 		}
+
 	}
 
 	@PostMapping("/reset-password")
