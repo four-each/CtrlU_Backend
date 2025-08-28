@@ -154,24 +154,17 @@ public class AuthController {
 		try {
 			boolean isComplete = authService.verifyResetToken(token);
 			String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8.toString());
-			String redirectUrl = "https://ctrlu.site/auth/reset-password?token=" + encodedToken;
-			log.info("Redirecting to: " + redirectUrl);
-			log.info(isComplete+"");
+			String redirectUrl = RESET_PASSWORD_URL + encodedToken;
 			if (isComplete) {
-				log.info("Redirecting to: " + redirectUrl);
-				log.info(isComplete+"");
 				return ResponseEntity.status(HttpStatus.FOUND)
 					.header("Location", redirectUrl)
 					.build();
 			} else {
-				log.info("Redirecting to error: " + redirectUrl);
-				log.info("error: " + isComplete);
 				return new RedirectView(ERROR_URL);  // 링크 만료 페이지로 이동
 			}
 		} catch (Exception e) {
 			return new RedirectView(ERROR_URL);
 		}
-
 	}
 
 	@PostMapping("/reset-password")

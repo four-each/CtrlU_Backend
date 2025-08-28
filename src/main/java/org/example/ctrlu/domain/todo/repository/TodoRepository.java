@@ -1,10 +1,12 @@
 package org.example.ctrlu.domain.todo.repository;
 
+import org.example.ctrlu.domain.auth.dto.response.TodoImage;
 import org.example.ctrlu.domain.todo.entity.Todo;
 import org.example.ctrlu.domain.todo.entity.TodoStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -65,4 +67,12 @@ public interface TodoRepository extends JpaRepository<Todo,Long> {
     );
 
     boolean existsByUserIdAndCreatedAtAfterAndStatusNot(long userId, LocalDateTime localDateTime, TodoStatus todoStatus);
+
+    @Modifying(clearAutomatically = true)
+    void deleteAllByUserId(Long userId);
+    @Query("""
+        SELECT new org.example.ctrlu.domain.auth.dto.response.TodoImage(t.startImage, t.endImage) FROM Todo t
+        WHERE t.user.id = :userId
+    """)
+    List<TodoImage> findImagesByUserId(@Param("userId") Long userId);
 }

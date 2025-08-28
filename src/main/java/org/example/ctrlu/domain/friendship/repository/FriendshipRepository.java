@@ -9,6 +9,7 @@ import org.example.ctrlu.domain.friendship.entity.Friendship;
 import org.example.ctrlu.domain.friendship.entity.FriendshipStatus;
 import org.example.ctrlu.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -85,4 +86,12 @@ public interface FriendshipRepository extends JpaRepository<Friendship,Long> {
         ORDER BY f.createdAt desc
     """)
     List<FriendResponse> getSentRequestsOf(@Param("userId") Long userId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+        DELETE FROM Friendship f
+        WHERE f.fromUser.id = :userId
+            OR f.toUser.id = :userId
+    """)
+    void deleteAllByToUserOrFromUser(@Param("userId") Long userId);
 }

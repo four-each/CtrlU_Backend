@@ -9,9 +9,11 @@ import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
 import org.example.ctrlu.domain.auth.util.JWTUtil;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.repository.UserRepository;
+import org.example.ctrlu.global.s3.AwsS3Service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,6 +49,8 @@ public class AuthIntegrationTest {
 	private JWTUtil jwtUtil;
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	@MockitoBean
+	private AwsS3Service awsS3Service;
 	private User user;
 	private String refreshToken;
 	static final MySQLContainer<?> mySQLContainer = TestMySQLConfig.MYSQL_CONTAINER;

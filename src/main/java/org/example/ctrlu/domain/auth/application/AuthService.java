@@ -2,6 +2,7 @@ package org.example.ctrlu.domain.auth.application;
 
 import static org.example.ctrlu.domain.auth.exception.AuthErrorCode.*;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.example.ctrlu.domain.auth.dto.request.DeleteUserRequest;
@@ -10,13 +11,17 @@ import org.example.ctrlu.domain.auth.dto.request.ResetPasswordRequest;
 import org.example.ctrlu.domain.auth.dto.request.SigninRequest;
 import org.example.ctrlu.domain.auth.dto.request.SignupRequest;
 import org.example.ctrlu.domain.auth.dto.response.FindPasswordResponse;
+import org.example.ctrlu.domain.auth.dto.response.TodoImage;
 import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
 import org.example.ctrlu.domain.auth.exception.AuthException;
 import org.example.ctrlu.domain.auth.repository.RedisTokenRepository;
 import org.example.ctrlu.domain.auth.util.JWTUtil;
+import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
+import org.example.ctrlu.domain.todo.repository.TodoRepository;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.entity.UserStatus;
 import org.example.ctrlu.domain.user.repository.UserRepository;
+import org.example.ctrlu.global.s3.AwsS3Service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,10 +39,13 @@ public class AuthService {
 	private static final Long VERIFYTOKEN_EXPIRATION_TIME = 300000L; // 5분
 
 	private final UserRepository userRepository;
+	private final FriendshipRepository friendshipRepository;
+	private final TodoRepository todoRepository;
 	private final RedisTokenRepository redisTokenRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final MailService mailService;
 	private final JWTUtil jwtUtil;
+	private final AwsS3Service awsS3Service;
 
 	@Value("${cloud.aws.s3.default-profile-image}")
 	private String defaultImageKey;
@@ -167,8 +175,21 @@ public class AuthService {
 			throw new AuthException(INVALID_PASSWORD);
 		}
 
-		logout(refreshTokenCookie);
+		deleteImagesFromS3(userId, user);
+		friendshipRepository.deleteAllByToUserOrFromUser(userId);
+		todoRepository.deleteAllByUserId(userId);
+		user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE).get();
 		user.softdelete();
+		logout(refreshTokenCookie);
+	}
+
+	private void deleteImagesFromS3(Long userId, User user) {
+		List<TodoImage> imagesByUserId = todoRepository.findImagesByUserId(userId);
+		for (TodoImage todoImage : imagesByUserId) {
+			awsS3Service.deleteImage(todoImage.startImage());
+			awsS3Service.deleteImage(todoImage.endImage());
+		}
+		awsS3Service.deleteImage(user.getProfileImageKey());
 	}
 
 	@Transactional
