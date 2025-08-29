@@ -2,6 +2,7 @@ package org.example.ctrlu.domain.todo.application;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
+import org.example.ctrlu.domain.todo.dto.projection.TodoProjection;
 import org.example.ctrlu.domain.todo.dto.request.CompleteTodoRequest;
 import org.example.ctrlu.domain.todo.dto.request.CreateTodoRequest;
 import org.example.ctrlu.domain.todo.dto.response.*;
@@ -17,6 +18,7 @@ import org.example.ctrlu.domain.user.repository.UserRepository;
 import org.example.ctrlu.global.s3.AwsS3Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,6 +100,8 @@ public class TodoService {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserException(NOT_FOUND_USER));
         Todo todo = todoRepository.findById(todoId).orElseThrow(() -> new TodoException(NOT_FOUND_TODO));
         if(todo.getUser()!=user) throw new TodoException(NOT_YOUR_TODO);
+        awsS3Service.deleteImage(todo.getStartImage());
+        awsS3Service.deleteImage(todo.getEndImage());
         todoRepository.delete(todo);
     }
 
@@ -114,14 +118,14 @@ public class TodoService {
             return new GetTodosResponse(List.of(), 0, 0);
         }
 
-        Page<Todo> todosPage = todoRepository.findAllByUserIdInAndStatus(friendIds, status, pageable);
-        return GetTodosResponse.from(todosPage, now(), awsS3Service);
+        Page<TodoProjection> todosPage = todoRepository.findTodoProjectionsBy(friendIds, status, pageable);
+        return GetTodosResponse.from(todosPage, now());
     }
 
     private GetTodosResponse getMyTodos(long userId, TodoStatus status, Pageable pageable) {
         userRepository.findById(userId).orElseThrow(() -> new UserException(NOT_FOUND_USER));
-        Page<Todo> todosPage = todoRepository.findAllByUserIdAndStatus(userId, status, pageable);
-        return GetTodosResponse.from(todosPage, now(), awsS3Service);
+        TodoProjection todosPage = todoRepository.findTodoProjectionBy(userId, status);
+        return GetTodosResponse.from(todosPage, now());
     }
 
     @Transactional(readOnly = true)
@@ -132,55 +136,73 @@ public class TodoService {
         }
 
         LocalDateTime since = now().minusHours(24);
-        List<Todo> latestTodos = todoRepository.findPagedLatestTodoPerFriend(
-                friendIds, since, pageable.getPageSize(), (int) pageable.getOffset()
-        );
 
-        int totalElements = todoRepository.countFriendsWithRecentTodos(friendIds, since);
-        int totalPages = (int) Math.ceil((double) totalElements / pageable.getPageSize());
-
+        // 1. Page 객체를 사용하여 데이터와 전체 카운트를 한 번에 조회
+        Page<Todo> latestTodosPage = todoRepository.findPagedLatestTodoPerFriend(friendIds, since, pageable);
+        List<Todo> latestTodos = latestTodosPage.getContent();
+        
         List<GetRecentUploadFriendsResponse.Friend> responseFriends = setFriendsData(userId, latestTodos);
         GetRecentUploadFriendsResponse.Me me = setMyData(userId, now());
 
-        return new GetRecentUploadFriendsResponse(me, responseFriends, totalPages, totalElements);
+        return new GetRecentUploadFriendsResponse(
+                me,
+                responseFriends,
+                latestTodosPage.getTotalPages(),
+                (int) latestTodosPage.getTotalElements());
     }
 
     private List<GetRecentUploadFriendsResponse.Friend> setFriendsData(long userId, List<Todo> latestTodos) {
-        String redisKey = REDIS_KEY_PREFIX + userId;
-        List<GetRecentUploadFriendsResponse.Friend> responseFriends = new ArrayList<>();
+        HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
 
-        for (Todo todo : latestTodos) {
+        if (latestTodos.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // N+1 해결: 친구 프로필 이미지 정보와 Redis의 '본상태' 정보를 한 번에 조회
+        List<Long> friendIds = latestTodos.stream()
+                .map(todo -> todo.getUser().getId())
+                .toList();
+        Map<Long, String> friendProfileImages = userRepository.findImageMapByIdIn(friendIds);
+        String redisKey = REDIS_KEY_PREFIX + userId;
+        List<String> friendIdStrings = friendIds.stream().map(String::valueOf).toList();
+        List<String> seenTodoIdObjects = hashOperations.multiGet(redisKey, friendIdStrings);
+
+        Map<Long, Long> seenTodoMap = new HashMap<>();
+        for (int i = 0; i < friendIds.size(); i++) {
+            if (seenTodoIdObjects.get(i) != null) {
+                seenTodoMap.put(friendIds.get(i), Long.parseLong(seenTodoIdObjects.get(i)));
+            }
+        }
+
+        // 루프 내에서는 조회 없이 Map에서 데이터를 가져와 가공만 함
+        List<GetRecentUploadFriendsResponse.Friend> responseFriends = latestTodos.stream().map(todo -> {
             long friendId = todo.getUser().getId();
             long latestTodoId = todo.getId();
 
-            String seenTodoIdStr = (String)redisTemplate.opsForHash().get(redisKey, String.valueOf(friendId));
-            long seenTodoId = seenTodoIdStr != null ? Long.parseLong(seenTodoIdStr) : -1;
+            long seenTodoId = seenTodoMap.getOrDefault(friendId, -1L);
 
             GetRecentUploadFriendsResponse.Status status = seenTodoId < latestTodoId
                     ? GetRecentUploadFriendsResponse.Status.GREEN
                     : GetRecentUploadFriendsResponse.Status.GRAY;
 
-            String profileImage = userRepository.getImageById(friendId);
+            String profileImage = friendProfileImages.get(friendId);
 
-            responseFriends.add(new GetRecentUploadFriendsResponse.Friend(
-                friendId,
-                awsS3Service.generateGetPresignedUrl(profileImage),
-                status
-            ));
-        }
+            return new GetRecentUploadFriendsResponse.Friend(
+                    friendId,
+                    awsS3Service.generateGetPresignedUrl(profileImage),
+                    status,
+                    todo.getCreatedAt()
+            );
+        }).collect(Collectors.toList());
 
-        // 초록색 상태(GREEN)와 회색 상태(GRAY)를 나누고 GREEN이 먼저 오도록 정렬
-        List<GetRecentUploadFriendsResponse.Friend> greenFriends = responseFriends.stream()
-                .filter(f -> f.status() == GetRecentUploadFriendsResponse.Status.GREEN)
-                .collect(Collectors.toList());
+        // 최적화된 정렬: Comparator를 사용하여 한 번에 정렬
+        responseFriends.sort(Comparator
+                // 1차 정렬: GREEN 상태가 먼저 오도록 (GREEN=0, GRAY=1)
+                .comparing((GetRecentUploadFriendsResponse.Friend f) -> f.status() == GetRecentUploadFriendsResponse.Status.GREEN ? 0 : 1)
+                // 2차 정렬: 1차 정렬이 같을 경우, createdAt을 기준으로 내림차순 정렬
+                .thenComparing(GetRecentUploadFriendsResponse.Friend::createdAt, Comparator.reverseOrder()));
 
-        List<GetRecentUploadFriendsResponse.Friend> grayFriends = responseFriends.stream()
-                .filter(f -> f.status() == GetRecentUploadFriendsResponse.Status.GRAY)
-                .collect(Collectors.toList());
-
-        // greenFriends 먼저, 그 뒤에 grayFriends 합침
-        greenFriends.addAll(grayFriends);
-        return greenFriends;
+        return responseFriends;
     }
 
 
