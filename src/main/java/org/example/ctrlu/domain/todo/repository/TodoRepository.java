@@ -19,7 +19,7 @@ public interface TodoRepository extends JpaRepository<Todo,Long> {
     List<Todo> findAllByUserIdAndStatus(Long userId, TodoStatus status);
 
     @Query("SELECT new org.example.ctrlu.domain.todo.dto.projection.TodoProjection(" +
-            "       t.id, u.nickname, t.createdAt) " +
+            "       t.id, t.title, u.nickname, t.createdAt) " +
             "FROM Todo t JOIN t.user u " +
             "WHERE u.id IN :friendIds AND t.status = :status")
     Page<TodoProjection> findTodoProjectionsBy(
@@ -29,7 +29,7 @@ public interface TodoRepository extends JpaRepository<Todo,Long> {
     );
 
     @Query("SELECT new org.example.ctrlu.domain.todo.dto.projection.TodoProjection(" +
-            "       t.id, u.nickname, t.createdAt) " +
+            "       t.id, t.title, u.nickname, t.createdAt) " +
             "FROM Todo t JOIN t.user u " +
             "WHERE u.id = :userId AND t.status = :status")
     TodoProjection findTodoProjectionBy(

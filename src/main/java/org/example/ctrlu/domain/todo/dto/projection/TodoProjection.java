@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public record TodoProjection(
         Long todoId,
+        String todoName,
         String nickname,
         LocalDateTime createdAt
 ) {}

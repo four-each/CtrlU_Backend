@@ -83,7 +83,7 @@ public class GetTodosServiceTest {
     void getMyTodos_success_sortedByCreatedAt() {
         // given
         Todo todo = makeTodo(user, LocalDateTime.of(2025, 5, 26, 9, 0), TodoStatus.IN_PROGRESS);
-        TodoProjection todoProjection= new TodoProjection(todo.getId(),user.getNickname(),todo.getCreatedAt());
+        TodoProjection todoProjection= new TodoProjection(todo.getId(),todo.getTitle(),user.getNickname(),todo.getCreatedAt());
 
         given(todoRepository.findTodoProjectionBy(eq(userId), eq(TodoStatus.IN_PROGRESS)))
                 .willReturn(todoProjection);
@@ -110,8 +110,11 @@ public class GetTodosServiceTest {
         long earlyTodoId = 202L;
         long lateTodoId = 201L;
 
-        TodoProjection earlyTodo = new TodoProjection(earlyTodoId, friend1, LocalDateTime.of(2025, 5, 26, 8, 0));
-        TodoProjection lateTodo = new TodoProjection(lateTodoId, friend2, LocalDateTime.of(2025, 5, 26, 9, 0));
+        String earlyTodoTitle = "할일2";
+        String lateTodoTitle = "할일1";
+
+        TodoProjection earlyTodo = new TodoProjection(earlyTodoId, earlyTodoTitle,friend1, LocalDateTime.of(2025, 5, 26, 8, 0));
+        TodoProjection lateTodo = new TodoProjection(lateTodoId, lateTodoTitle,friend2, LocalDateTime.of(2025, 5, 26, 9, 0));
 
         Page<TodoProjection> page = new PageImpl<>(List.of(earlyTodo, lateTodo));
 
