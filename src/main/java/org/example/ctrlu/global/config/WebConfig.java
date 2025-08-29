@@ -10,7 +10,7 @@ public class WebConfig implements WebMvcConfigurer {
 	public void addCorsMappings(final CorsRegistry registry) {
 		// ✅ 모든 요청을 허용하도록 수정한 코드
 		registry.addMapping("/**")
-				.allowedOrigins("*") // 모든 출처 허용
+				.allowedOrigins("http://localhost:3000", "https://www.ctrlu.site")
 				.allowedMethods("*") // 모든 HTTP 메소드 허용
 				.allowedHeaders("*") // 모든 헤더 허용
 				.allowCredentials(true); // 와일드카드 사용 시에는 false로 설정해야 함
