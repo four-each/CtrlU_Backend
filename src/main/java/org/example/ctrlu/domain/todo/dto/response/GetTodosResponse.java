@@ -8,7 +8,9 @@ import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public record GetTodosResponse(
         List<TodoDetail> todos,
@@ -17,8 +19,10 @@ public record GetTodosResponse(
 ) {
     public static GetTodosResponse from(Page<TodoProjection> todosPage, LocalDateTime now) {
         List<TodoDetail> todos = todosPage.getContent().stream()
+                .filter(Objects::nonNull)
                 .map(todo -> new TodoDetail(
                     todo.todoId(),
+                    todo.todoName(),
                     todo.nickname(),
                     DurationTimeCalculator.calculateInProgress(todo.createdAt(), now)
                 ))
@@ -32,8 +36,16 @@ public record GetTodosResponse(
     }
 
     public static GetTodosResponse from(TodoProjection todo, LocalDateTime now) {
+        if (todo == null) {
+            return new GetTodosResponse(
+                    Collections.emptyList(),
+                    0,
+                    0
+            );
+        }
+
         List<TodoDetail> todos = new ArrayList<>();
-        TodoDetail todoDetail = new TodoDetail(todo.todoId(), todo.nickname(), DurationTimeCalculator.calculateInProgress(todo.createdAt(), now));
+        TodoDetail todoDetail = new TodoDetail(todo.todoId(), todo.todoName(), todo.nickname(), DurationTimeCalculator.calculateInProgress(todo.createdAt(), now));
         todos.add(todoDetail);
 
         return new GetTodosResponse(
@@ -45,6 +57,7 @@ public record GetTodosResponse(
 
     public static record TodoDetail(
             Long id,
+            String todoName,
             String userName,
             int durationTime
     ) {}
