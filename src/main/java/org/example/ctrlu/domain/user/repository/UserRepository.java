@@ -1,6 +1,9 @@
 package org.example.ctrlu.domain.user.repository;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.entity.UserStatus;
@@ -33,4 +36,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     	ORDER BY u.id ASC
     """)
 	Slice<User> findByEmailStartsWithNextPage(@Param("keyword") String keyword, @Param("cursorId") Long cursorId, Pageable pageable);
+
+	List<UserImageProjection> findAllProjectionByIdIn(List<Long> ids);
+	default Map<Long, String> findImageMapByIdIn(List<Long> userIds) {
+		return findAllProjectionByIdIn(userIds).stream()
+				.collect(Collectors.toMap(
+						UserImageProjection::getId,
+						projection -> projection.getProfileImageKey() == null
+								? ""
+								: projection.getProfileImageKey()
+				));
+	}
 }

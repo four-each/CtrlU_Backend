@@ -26,4 +26,8 @@ public class DurationTimeCalculator {
             default -> throw new UnsupportedOperationException("지원하지 않는 상태: " + status);
         };
     }
+
+    public static int calculateInProgress(LocalDateTime createdAt, LocalDateTime now) {
+        return (int) Duration.between(createdAt, now).toMillis();
+    }
 }

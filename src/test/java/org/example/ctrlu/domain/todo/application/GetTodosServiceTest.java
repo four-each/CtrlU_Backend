@@ -1,6 +1,7 @@
 package org.example.ctrlu.domain.todo.application;
 
 import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
+import org.example.ctrlu.domain.todo.dto.projection.TodoProjection;
 import org.example.ctrlu.domain.todo.dto.response.GetTodosResponse;
 import org.example.ctrlu.domain.todo.entity.Todo;
 import org.example.ctrlu.domain.todo.entity.TodoStatus;
@@ -18,6 +19,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -81,10 +83,10 @@ public class GetTodosServiceTest {
     void getMyTodos_success_sortedByCreatedAt() {
         // given
         Todo todo = makeTodo(user, LocalDateTime.of(2025, 5, 26, 9, 0), TodoStatus.IN_PROGRESS);
-        Page<Todo> page = new PageImpl<>(List.of(todo));
+        TodoProjection todoProjection= new TodoProjection(todo.getId(),user.getNickname(),todo.getCreatedAt());
 
-        given(todoRepository.findAllByUserIdAndStatus(eq(userId), eq(TodoStatus.IN_PROGRESS), any()))
-                .willReturn(page);
+        given(todoRepository.findTodoProjectionBy(eq(userId), eq(TodoStatus.IN_PROGRESS)))
+                .willReturn(todoProjection);
 
         // when
         GetTodosResponse response = todoService.getTodos(userId, "me", TodoStatus.IN_PROGRESS, PageRequest.of(0, 10));
@@ -96,28 +98,35 @@ public class GetTodosServiceTest {
     }
 
     @Test
-    @DisplayName("친구의 할 일 조회 성공 - createdAt 오름차순")
-    void getFriendTodos_success_sortedByCreatedAt() {
+    @DisplayName("친구의 할 일 조회 성공")
+    void getFriendTodos_success() {
         // given
-        long friendId1 = 2L;
-        long friendId2 = 3L;
-        List<Long> friendIds = List.of(friendId1, friendId2);
-        long createdLateTodoId = 201L;
-        long createdAheadTodoId = 202L;
-        Todo friendTodo1 = makeTodoWithId(friendId1, LocalDateTime.of(2025, 5, 26, 8, 0), TodoStatus.IN_PROGRESS, createdAheadTodoId);
-        Todo friendTodo2 = makeTodoWithId(friendId2, LocalDateTime.of(2025, 5, 26, 9, 0), TodoStatus.IN_PROGRESS, createdLateTodoId);
-        Page<Todo> page = new PageImpl<>(List.of(friendTodo1, friendTodo2));
+        Long userId = 1L;
+        List<Long> friendIds = List.of(10L, 11L);
+
+        String friend1 = "친구1";
+        String friend2 = "친구2";
+
+        long earlyTodoId = 202L;
+        long lateTodoId = 201L;
+
+        TodoProjection earlyTodo = new TodoProjection(earlyTodoId, friend1, LocalDateTime.of(2025, 5, 26, 8, 0));
+        TodoProjection lateTodo = new TodoProjection(lateTodoId, friend2, LocalDateTime.of(2025, 5, 26, 9, 0));
+
+        Page<TodoProjection> page = new PageImpl<>(List.of(earlyTodo, lateTodo));
 
         given(friendshipRepository.findAcceptedFriendIds(userId)).willReturn(friendIds);
-        given(todoRepository.findAllByUserIdInAndStatus(eq(friendIds), eq(TodoStatus.IN_PROGRESS), any()))
+        given(todoRepository.findTodoProjectionsBy(eq(friendIds), eq(TodoStatus.IN_PROGRESS), any()))
                 .willReturn(page);
 
         // when
-        GetTodosResponse response = todoService.getTodos(userId, "friend", TodoStatus.IN_PROGRESS, PageRequest.of(0, 10));
+        PageRequest pageRequest = PageRequest.of(0, 10, Sort.by("createdAt").ascending());
+        GetTodosResponse response = todoService.getTodos(userId, "friend", TodoStatus.IN_PROGRESS, pageRequest);
 
         // then
         assertThat(response.todos()).hasSize(2);
-        assertThat(response.todos().get(0).id()).isEqualTo(createdAheadTodoId);
+        assertThat(response.todos().get(0).id()).isEqualTo(earlyTodoId);
+        assertThat(response.todos().get(1).id()).isEqualTo(lateTodoId);
     }
 
     @DisplayName("친구의 할 일 조회 실패 - 진행중 상태가 아닐 경우 예외 발생")

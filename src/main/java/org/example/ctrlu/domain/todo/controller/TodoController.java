@@ -62,9 +62,9 @@ public class TodoController {
     }
 
     @GetMapping
-    public BaseResponse<GetTodosResponse> getTodos(@RequestParam String target,
+    public BaseResponse<GetTodosResponse> getTodos(@RequestParam(value="target") String target,
                                                    @AuthenticationPrincipal Long userId,
-                                                   @RequestParam TodoStatus status,
+                                                   @RequestParam(value="status") TodoStatus status,
                                                    @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC, page= 0) Pageable pageable){
         if(!target.equals("me") && !target.equals("friend")) throw new IllegalArgumentException("잘못된 접근입니다.");
         GetTodosResponse response = todoService.getTodos(userId, target, status, pageable);
@@ -80,8 +80,8 @@ public class TodoController {
 
     @GetMapping("/detail/within-24hours")
     public BaseResponse<GetRecentUploadTodoResponse> getRecentUploadTodo(@AuthenticationPrincipal Long userId,
-                                                                         @RequestParam long targetId,
-                                                                         @RequestParam long nowId){
+                                                                         @RequestParam("targetId") long targetId,
+                                                                         @RequestParam("nowId") long nowId){
         GetRecentUploadTodoResponse response = todoService.getRecentUploadTodo(userId, targetId, nowId);
         return new BaseResponse<>(response);
     }

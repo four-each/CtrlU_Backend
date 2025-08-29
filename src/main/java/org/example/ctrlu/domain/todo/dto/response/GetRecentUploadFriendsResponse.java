@@ -1,5 +1,6 @@
 package org.example.ctrlu.domain.todo.dto.response;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,7 +20,8 @@ public record GetRecentUploadFriendsResponse(
     public record Friend(
             long id,
             String profileImage,
-            Status status
+            Status status,
+            LocalDateTime createdAt
     ) {}
 
     public enum Status {
