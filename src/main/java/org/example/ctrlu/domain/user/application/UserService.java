@@ -70,15 +70,13 @@ public class UserService {
 
 		PageRequest pageable = PageRequest.of(0, size);
 		String lowerCaseKeyword = keyword.trim().toLowerCase();
+		Slice<User> usersSlice = userRepository.findByEmailWithCursor(lowerCaseKeyword, cursorId, pageable);;
 
-		Slice<User> usersSlice;
-		if (cursorId == null) {
-			usersSlice = userRepository.findByEmailStartsWithFirstPage(lowerCaseKeyword, pageable);
-		} else {
-			usersSlice = userRepository.findByEmailStartsWithNextPage(lowerCaseKeyword, cursorId, pageable);
-		}
-
-		return CursorResult.of(usersSlice, SearchUsersResponse::from, SearchUsersResponse::id);
+		return CursorResult.of(
+			usersSlice,
+			user -> SearchUsersResponse.from(user, awsS3Service),
+			SearchUsersResponse::id
+		);
 	}
 
 	public GetProfileResponse getProfile(Long userId) {

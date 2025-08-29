@@ -1,5 +1,9 @@
 package org.example.ctrlu.domain.auth.controller;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import org.example.ctrlu.domain.auth.application.AuthService;
 import org.example.ctrlu.domain.auth.dto.request.DeleteUserRequest;
 import org.example.ctrlu.domain.auth.dto.request.FindPasswordRequest;
@@ -7,6 +11,7 @@ import org.example.ctrlu.domain.auth.dto.request.GetPresignedUrlRequest;
 import org.example.ctrlu.domain.auth.dto.request.ResetPasswordRequest;
 import org.example.ctrlu.domain.auth.dto.request.SigninRequest;
 import org.example.ctrlu.domain.auth.dto.request.SignupRequest;
+import org.example.ctrlu.domain.auth.dto.response.FindPasswordResponse;
 import org.example.ctrlu.domain.auth.dto.response.PresignedUrlResponse;
 import org.example.ctrlu.domain.auth.dto.response.SigninResponse;
 import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
@@ -14,6 +19,7 @@ import org.example.ctrlu.global.response.BaseResponse;
 import org.example.ctrlu.global.s3.AwsS3Service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,16 +37,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
+@Slf4j
 public class AuthController {
 	private final AuthService authService;
 	private final AwsS3Service awsS3Service;
 	private static final String LOGIN_URL = "https://ctrlu.site/auth/verification-complete";
 	private static final String ERROR_URL = "https://ctrlu.site/auth/verification-error";
-	private static final String RESET_PASSWORD_URL = "http://ctrlu.site/reset-password";
+	private static final String RESET_PASSWORD_URL = "https://ctrlu.site/auth/reset-password?token=";
 	private static final String COOKIE_REFRESHTOKEN = "refreshToken=";
 	private static final String COOKIE_NAME_REFRESHTOKEN = "refreshToken";
 	private static final String COOKIE_FLAGS = "; Path=/; HttpOnly; Secure; ";
@@ -137,19 +145,25 @@ public class AuthController {
 	}
 
 	@PostMapping("/find-password")
-	public BaseResponse<Void> findPassword(@Valid @RequestBody FindPasswordRequest request) {
-		authService.findPassword(request);
-		return new BaseResponse<>(null);
+	public BaseResponse<FindPasswordResponse> findPassword(@Valid @RequestBody FindPasswordRequest request) {
+		return new BaseResponse<>(authService.findPassword(request));
 	}
 
 	@GetMapping("/reset-password")
-	public Object verifyResetToken(@RequestParam("token") String token) {
-		boolean isComplete = authService.verifyResetToken(token);
-
-		if (isComplete) {
-			return new RedirectView(RESET_PASSWORD_URL);
-		} else {
-			return new RedirectView(ERROR_URL);  // 링크 만료 페이지로 이동
+	public Object verifyResetToken(@RequestParam("token") String token, HttpServletResponse response) {
+		try {
+			boolean isComplete = authService.verifyResetToken(token);
+			String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8.toString());
+			String redirectUrl = RESET_PASSWORD_URL + encodedToken;
+			if (isComplete) {
+				return ResponseEntity.status(HttpStatus.FOUND)
+					.header("Location", redirectUrl)
+					.build();
+			} else {
+				return new RedirectView(ERROR_URL);  // 링크 만료 페이지로 이동
+			}
+		} catch (Exception e) {
+			return new RedirectView(ERROR_URL);
 		}
 	}
 

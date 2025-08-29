@@ -13,6 +13,8 @@ import org.example.ctrlu.domain.auth.dto.response.TokenInfo;
 import org.example.ctrlu.domain.auth.exception.AuthException;
 import org.example.ctrlu.domain.auth.repository.RedisTokenRepository;
 import org.example.ctrlu.domain.auth.util.JWTUtil;
+import org.example.ctrlu.domain.friendship.repository.FriendshipRepository;
+import org.example.ctrlu.domain.todo.repository.TodoRepository;
 import org.example.ctrlu.domain.user.entity.User;
 import org.example.ctrlu.domain.user.entity.UserStatus;
 import org.example.ctrlu.domain.user.repository.UserRepository;
@@ -48,6 +50,10 @@ class AuthServiceTest {
 	private AwsS3Service awsS3Service;
 	@Mock
 	private UserRepository userRepository;
+	@Mock
+	private TodoRepository todoRepository;
+	@Mock
+	private FriendshipRepository friendshipRepository;
 	@Mock
 	private PasswordEncoder passwordEncoder;
 	@Mock
