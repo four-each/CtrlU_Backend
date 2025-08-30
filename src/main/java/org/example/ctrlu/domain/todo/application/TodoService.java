@@ -70,7 +70,7 @@ public class TodoService {
         int durationTime = DurationTimeCalculator.calculate(todo, now());
         boolean isMine = getIsMine(todo,user);
 
-        return GetTodoResponse.from(todo,durationTime, isMine, awsS3Service);
+        return GetTodoResponse.from(todo,user.getProfileImageKey(),durationTime, isMine, awsS3Service);
     }
 
     private boolean getIsMine(Todo todo, User user) {
