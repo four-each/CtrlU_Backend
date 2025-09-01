@@ -10,6 +10,7 @@ import java.time.LocalTime;
 
 public record GetRecentUploadTodoResponse(
         String title,
+        String profileImage,
         String startImage,
         String endImage,
         LocalTime challengeTime,
@@ -19,9 +20,10 @@ public record GetRecentUploadTodoResponse(
         Long prevId,
         int totalCount
 ) {
-    public static GetRecentUploadTodoResponse from(LocalDateTime now, Todo todo, Long prevId, Long nextId, int totalCount, AwsS3Service awsS3Service) {
+    public static GetRecentUploadTodoResponse from(LocalDateTime now,String profileImage, Todo todo, Long prevId, Long nextId, int totalCount, AwsS3Service awsS3Service) {
         return new GetRecentUploadTodoResponse(
             todo.getTitle(),
+            awsS3Service.generateGetPresignedUrl(profileImage),
             awsS3Service.generateGetPresignedUrl(todo.getStartImage()),
             awsS3Service.generateGetPresignedUrl(todo.getEndImage()),
             todo.getChallengeTime(),
