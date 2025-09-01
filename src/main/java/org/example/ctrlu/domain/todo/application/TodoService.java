@@ -226,6 +226,9 @@ public class TodoService {
         String redisKey = REDIS_KEY_PREFIX + userId;
         String seenValue = (String) redisTemplate.opsForHash().get(redisKey, String.valueOf(targetId));
 
+        User target = userRepository.findById(targetId)
+                .orElseThrow(() -> new UserException(NOT_FOUND_USER));
+
         //target의 최근 24시간 내 등록된 할 일(오래된 순) 조회
         List<Todo> recentTodos = todoRepository.findAllRecentTodosByUserId(
                 targetId, now().minusHours(24), TodoStatus.GIVEN_UP
@@ -246,20 +249,20 @@ public class TodoService {
                 if (latestIndex == -1 || latestIndex == recentTodos.size() - 1){
                     Todo first = recentTodos.get(0);
                     if (latestIndex == -1) redisTemplate.opsForHash().put(redisKey, String.valueOf(targetId), String.valueOf(first.getId()));
-                    return GetRecentUploadTodoResponse.from(now(), first, null, getNextId(recentTodos, 0), recentTodos.size(), awsS3Service);
+                    return GetRecentUploadTodoResponse.from(now(), target.getProfileImageKey(), first, null, getNextId(recentTodos, 0), recentTodos.size(), awsS3Service);
                 }
                 //유효한 본 이력이고 아직 가장 최신 할 일을 조회하지 않은 경우
                 else {
                     Todo next = recentTodos.get(latestIndex + 1);
                     redisTemplate.opsForHash().put(redisKey, String.valueOf(targetId), String.valueOf(next.getId()));
-                    return GetRecentUploadTodoResponse.from(now(), next, recentTodos.get(latestIndex).getId(), getNextId(recentTodos, latestIndex + 1), recentTodos.size(), awsS3Service);
+                    return GetRecentUploadTodoResponse.from(now(), target.getProfileImageKey(), next, recentTodos.get(latestIndex).getId(), getNextId(recentTodos, latestIndex + 1), recentTodos.size(), awsS3Service);
                 }
             }
             //Redis 에 이 전에 본 이력이 없는 경우
             else {
                 Todo first = recentTodos.get(0);
                 redisTemplate.opsForHash().put(redisKey, String.valueOf(targetId), String.valueOf(first.getId()));
-                return GetRecentUploadTodoResponse.from(now(), first, null, getNextId(recentTodos, 0), recentTodos.size(), awsS3Service);
+                return GetRecentUploadTodoResponse.from(now(), target.getProfileImageKey(), first, null, getNextId(recentTodos, 0), recentTodos.size(), awsS3Service);
 
             }
         }
@@ -274,9 +277,6 @@ public class TodoService {
             throw new TodoException(TodoErrorCode.NOT_FOUND_TODO);
         }
 
-        User target = userRepository.findById(targetId)
-                .orElseThrow(() -> new UserException(NOT_FOUND_USER));
-
         if(!Objects.equals(recentTodos.get(currentIndex).getUser(), target)) {
             throw new TodoException(NOT_TARGET_TODO);
         }
@@ -289,7 +289,7 @@ public class TodoService {
 
         Long prevId = currentIndex > 0 ? recentTodos.get(currentIndex - 1).getId() : null;
         Long nextId = getNextId(recentTodos, currentIndex);
-        return GetRecentUploadTodoResponse.from(now(), recentTodos.get(currentIndex), prevId, nextId, recentTodos.size(), awsS3Service);
+        return GetRecentUploadTodoResponse.from(now(), target.getProfileImageKey() ,recentTodos.get(currentIndex), prevId, nextId, recentTodos.size(), awsS3Service);
     }
 
     private Long getNextId(List<Todo> todos, int index) {
