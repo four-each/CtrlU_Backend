@@ -69,7 +69,7 @@ class AuthControllerTest {
 	@DisplayName("회원가입에 성공한다.")
 	void signup_success() throws Exception {
 		// given
-		SignupRequest request = new SignupRequest("test1@example.com", "password1235", "tester", ".jpg");
+		SignupRequest request = new SignupRequest("test1@example.com", "password1!!", "tester", ".jpg");
 		String requestJson = objectMapper.writeValueAsString(request);
 
 		// when & then

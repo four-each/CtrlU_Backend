@@ -1,7 +1,5 @@
 package org.example.ctrlu.domain.user.controller;
 
-import java.util.List;
-
 import org.example.ctrlu.domain.user.application.UserService;
 import org.example.ctrlu.domain.user.dto.request.UpdatePasswordRequest;
 import org.example.ctrlu.domain.user.dto.request.UpdateProfileRequest;
@@ -9,17 +7,13 @@ import org.example.ctrlu.domain.user.dto.response.CursorResult;
 import org.example.ctrlu.domain.user.dto.response.GetProfileResponse;
 import org.example.ctrlu.domain.user.dto.response.SearchUsersResponse;
 import org.example.ctrlu.global.response.BaseResponse;
-import org.example.ctrlu.global.s3.AwsS3Service;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

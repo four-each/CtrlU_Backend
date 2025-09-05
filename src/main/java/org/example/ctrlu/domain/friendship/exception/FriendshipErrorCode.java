@@ -18,7 +18,12 @@ public enum FriendshipErrorCode implements ErrorCode {
 	REJECTED_FRIENDSHIP(HttpStatus.CONFLICT.value(),"F006","요청을 거절한 친구입니다."),
 	FRIEND_LIMIT_EXCEEDED(HttpStatus.CONFLICT.value(),"F007","친구 수가 최대 한도에 도달했습니다."),
 	CANNOT_FRIEND_SELF(HttpStatus.BAD_REQUEST.value(), "F008", "자기 자신에게 친구 요청을 할 수 없습니다."),
-	ALREADY_EXISTS_FRIENDSHIP(HttpStatus.CONFLICT.value(), "F009", "이미 친구이거나 거절/대기중인 요청이 존재합니다.");
+	ALREADY_EXISTS_FRIENDSHIP(HttpStatus.CONFLICT.value(), "F009", "이미 친구이거나 거절/대기중인 요청이 존재합니다."),
+	FRIENDSHIP_ACCEPT_CONFLICT(HttpStatus.CONFLICT.value(), "F010", "충돌로 인해 친구 요청 수락을 실패했습니다."),
+	FRIENDSHIP_REJECT_CONFLICT(HttpStatus.CONFLICT.value(), "F011", "충돌로 인해 친구 요청 거절을 실패했습니다."),
+	FRIENDSHIP_CANCEL_CONFLICT(HttpStatus.CONFLICT.value(), "F012", "충돌로 인해 친구 요청 취소를 실패했습니다."),
+	FRIENDSHIP_REQUEST_CONFLICT(HttpStatus.CONFLICT.value(), "F013", "충돌로 인해 친구 요청에 실패했습니다."),
+	FRIENDSHIP_REQUEST_LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT.value(), "F014", "친구 요청 락 획득에 실패했습니다.");
 
 	private final int status;
 	private final String code;

@@ -10,7 +10,8 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum UserErrorCode implements ErrorCode {
 	NOT_FOUND_USER(HttpStatus.NOT_FOUND.value(),"U001","존재하지 않는 사용자입니다."),
-	INVALID_PASSWORD(HttpStatus.UNAUTHORIZED.value(), "U002", "유효하지 않은 비밀번호입니다.");
+	INVALID_PASSWORD(HttpStatus.UNAUTHORIZED.value(), "U002", "유효하지 않은 비밀번호입니다."),
+	USER_SEARCH_FAILED(HttpStatus.NOT_FOUND.value(),"U003","사용자 검색에 실패했습니다.");
 
 	private final int status;
 	private final String code;

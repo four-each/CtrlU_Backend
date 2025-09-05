@@ -31,6 +31,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 class RequestFriendshipServiceTest {
 	@InjectMocks
 	private FriendshipService friendshipService;
+	@InjectMocks
+	private FriendshipRedissonLockService friendshipRedissonLockService;
 	@Mock
 	private FriendshipRepository friendshipRepository;
 	@Mock
@@ -150,7 +152,7 @@ class RequestFriendshipServiceTest {
 			given(userRepository.findByIdAndStatus(loginUser.getId(), UserStatus.ACTIVE)).willReturn(Optional.empty());
 
 			// when & then
-			assertThatThrownBy(() -> friendshipService.requestFriendship(loginUser.getId(), request))
+			assertThatThrownBy(() -> friendshipRedissonLockService.requestFriendshipWithLock(loginUser.getId(), request))
 				.isInstanceOf(FriendshipException.class)
 				.hasMessage(NOT_FOUND_USER.getMessage());
 		}
@@ -163,7 +165,7 @@ class RequestFriendshipServiceTest {
 			given(userRepository.findByIdAndStatus(targetUser.getId(), UserStatus.ACTIVE)).willReturn(Optional.empty());
 
 			// when & then
-			assertThatThrownBy(() -> friendshipService.requestFriendship(loginUser.getId(), request))
+			assertThatThrownBy(() -> friendshipRedissonLockService.requestFriendshipWithLock(loginUser.getId(), request))
 				.isInstanceOf(FriendshipException.class)
 				.hasMessage(NOT_FOUND_TARGET.getMessage());
 		}
@@ -176,7 +178,7 @@ class RequestFriendshipServiceTest {
 			given(userRepository.findByIdAndStatus(loginUser.getId(), UserStatus.ACTIVE)).willReturn(Optional.of(loginUser));
 
 			// when & then
-			assertThatThrownBy(() -> friendshipService.requestFriendship(loginUser.getId(), selfRequest))
+			assertThatThrownBy(() -> friendshipRedissonLockService.requestFriendshipWithLock(loginUser.getId(), selfRequest))
 				.isInstanceOf(FriendshipException.class)
 				.hasMessage(CANNOT_FRIEND_SELF.getMessage());
 		}
@@ -190,7 +192,7 @@ class RequestFriendshipServiceTest {
 			given(friendshipRepository.findAcceptedFriendIds(loginUser.getId())).willReturn(friendIds);
 
 			// when & then
-			assertThatThrownBy(() -> friendshipService.requestFriendship(loginUser.getId(), request))
+			assertThatThrownBy(() -> friendshipRedissonLockService.requestFriendshipWithLock(loginUser.getId(), request))
 				.isInstanceOf(FriendshipException.class)
 				.hasMessage(FRIEND_LIMIT_EXCEEDED.getMessage());
 		}

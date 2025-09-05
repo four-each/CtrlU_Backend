@@ -3,8 +3,6 @@ package org.example.ctrlu.domain.user.application;
 import static org.example.ctrlu.domain.user.exception.UserErrorCode.*;
 
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.example.ctrlu.domain.user.dto.request.UpdatePasswordRequest;
 import org.example.ctrlu.domain.user.dto.request.UpdateProfileRequest;
@@ -22,7 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
@@ -79,6 +76,7 @@ public class UserService {
 		);
 	}
 
+	@Transactional(readOnly = true)
 	public GetProfileResponse getProfile(Long userId) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new UserException(NOT_FOUND_USER));
