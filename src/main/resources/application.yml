@@ -7,7 +7,13 @@ spring:
   jackson:
     time-zone: Asia/Seoul
 
-# ---
+---
+
+management:
+  metrics:
+    binders:
+      processor:
+        enabled: false
 
 # management:
 #   endpoints:
