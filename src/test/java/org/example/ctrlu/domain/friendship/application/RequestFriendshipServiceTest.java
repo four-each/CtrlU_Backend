@@ -80,10 +80,12 @@ class RequestFriendshipServiceTest {
 		@DisplayName("친구 요청에 성공한다.")
 		void requestFriendship_Success() {
 			// given
+			mockUserFindById();
+			given(friendshipRepository.findAcceptedFriendIds(loginUser.getId())).willReturn(Collections.emptyList());
 			given(friendshipRepository.findFriendshipBetween(loginUser, targetUser)).willReturn(Optional.empty());
 
 			// when
-			friendshipService.requestFriendship(loginUser, targetUser);
+			friendshipService.requestFriendship(loginUser.getId(), request);
 
 			// then
 			verify(friendshipRepository, times(1)).save(any(Friendship.class));
@@ -93,6 +95,7 @@ class RequestFriendshipServiceTest {
 		@DisplayName("상대방이 요청을 거절했으나 7일이 지나 재요청에 성공한다.")
 		void requestFriendship_Success_After7DaysOfRejection() {
 			// given
+			mockUserFindById();
 			Friendship rejectedFriendship = Friendship.builder()
 				.fromUser(loginUser)
 				.toUser(targetUser)
@@ -100,11 +103,12 @@ class RequestFriendshipServiceTest {
 			ReflectionTestUtils.setField(rejectedFriendship, "status", FriendshipStatus.REJECTED);
 			ReflectionTestUtils.setField(rejectedFriendship, "rejectedAt", LocalDateTime.now().minusDays(8));
 
+			given(friendshipRepository.findAcceptedFriendIds(loginUser.getId())).willReturn(Collections.emptyList());
 			given(friendshipRepository.findFriendshipBetween(loginUser, targetUser)).willReturn(
 				Optional.of(rejectedFriendship));
 
 			// when
-			friendshipService.requestFriendship(loginUser, targetUser);
+			friendshipService.requestFriendship(loginUser.getId(), request);
 
 			// then
 			verify(friendshipRepository, times(1)).delete(rejectedFriendship);
@@ -116,6 +120,7 @@ class RequestFriendshipServiceTest {
 		@DisplayName("내가 거절했던 상대에게 친구 요청에 성공한다.")
 		void requestFriendship_Success_WhenLoginUserRejectedBefore() {
 			// given
+			mockUserFindById();
 			Friendship rejectedByMe = Friendship.builder()
 				.fromUser(targetUser)
 				.toUser(loginUser)
@@ -123,11 +128,12 @@ class RequestFriendshipServiceTest {
 			ReflectionTestUtils.setField(rejectedByMe, "status", FriendshipStatus.REJECTED);
 			ReflectionTestUtils.setField(rejectedByMe, "rejectedAt", LocalDateTime.now().minusDays(1));
 
+			given(friendshipRepository.findAcceptedFriendIds(loginUser.getId())).willReturn(Collections.emptyList());
 			given(friendshipRepository.findFriendshipBetween(loginUser, targetUser)).willReturn(
 				Optional.of(rejectedByMe));
 
 			// when
-			friendshipService.requestFriendship(loginUser, targetUser);
+			friendshipService.requestFriendship(loginUser.getId(), request);
 
 			// then
 			verify(friendshipRepository, times(1)).delete(rejectedByMe);
@@ -195,15 +201,17 @@ class RequestFriendshipServiceTest {
 		@DisplayName("이미 친구 요청을 보낸 상태(PENDING)이면 예외가 발생한다")
 		void requestFriendship_Fail_AlreadyRequested() {
 			// given
+			mockUserFindById();
 			Friendship pendingFriendship = Friendship.builder()
 				.fromUser(targetUser)
 				.toUser(loginUser)
 				.build();
 			ReflectionTestUtils.setField(pendingFriendship, "status", FriendshipStatus.PENDING);
+			given(friendshipRepository.findAcceptedFriendIds(loginUser.getId())).willReturn(Collections.emptyList());
 			given(friendshipRepository.findFriendshipBetween(loginUser, targetUser)).willReturn(Optional.of(pendingFriendship));
 
 			// when & then
-			assertThatThrownBy(() -> friendshipService.requestFriendship(loginUser, targetUser))
+			assertThatThrownBy(() -> friendshipService.requestFriendship(loginUser.getId(), request))
 				.isInstanceOf(FriendshipException.class)
 				.hasMessage(ALREADY_REQUESTED_FRIENDSHIP.getMessage());
 		}
@@ -212,15 +220,17 @@ class RequestFriendshipServiceTest {
 		@DisplayName("이미 친구 관계(ACCEPTED)이면 예외가 발생한다")
 		void requestFriendship_Fail_AlreadyFriends() {
 			// given
+			mockUserFindById();
 			Friendship acceptedFriendship = Friendship.builder()
 				.fromUser(targetUser)
 				.toUser(loginUser)
 				.build();
 			ReflectionTestUtils.setField(acceptedFriendship, "status", FriendshipStatus.ACCEPTED);
+			given(friendshipRepository.findAcceptedFriendIds(loginUser.getId())).willReturn(Collections.emptyList());
 			given(friendshipRepository.findFriendshipBetween(loginUser, targetUser)).willReturn(Optional.of(acceptedFriendship));
 
 			// when & then
-			assertThatThrownBy(() -> friendshipService.requestFriendship(loginUser, targetUser))
+			assertThatThrownBy(() -> friendshipService.requestFriendship(loginUser.getId(), request))
 				.isInstanceOf(FriendshipException.class)
 				.hasMessage(ALREADY_ACCEPTED_FRIENDSHIP.getMessage());
 		}
@@ -229,6 +239,7 @@ class RequestFriendshipServiceTest {
 		@DisplayName("상대방이 요청을 거절했고 7일이 지나지 않았으면 예외가 발생한다")
 		void requestFriendship_Fail_RejectedWithin7Days() {
 			// given
+			mockUserFindById();
 			Friendship rejectedFriendship = Friendship.builder()
 				.fromUser(loginUser)
 				.toUser(targetUser)
@@ -236,10 +247,11 @@ class RequestFriendshipServiceTest {
 			ReflectionTestUtils.setField(rejectedFriendship, "status", FriendshipStatus.REJECTED);
 			ReflectionTestUtils.setField(rejectedFriendship, "rejectedAt", LocalDateTime.now().minusDays(1));
 
+			given(friendshipRepository.findAcceptedFriendIds(loginUser.getId())).willReturn(Collections.emptyList());
 			given(friendshipRepository.findFriendshipBetween(loginUser, targetUser)).willReturn(Optional.of(rejectedFriendship));
 
 			// when & then
-			assertThatThrownBy(() -> friendshipService.requestFriendship(loginUser, targetUser))
+			assertThatThrownBy(() -> friendshipService.requestFriendship(loginUser.getId(), request))
 				.isInstanceOf(FriendshipException.class)
 				.hasMessage(REJECTED_FRIENDSHIP.getMessage());
 		}

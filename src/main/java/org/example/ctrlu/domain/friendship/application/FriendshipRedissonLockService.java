@@ -50,7 +50,7 @@ public class FriendshipRedissonLockService {
 				throw new FriendshipException(FRIENDSHIP_REQUEST_CONFLICT);
 			}
 
-			friendshipService.requestFriendship(loginUser, target);
+			friendshipService.requestFriendship(userId, request);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			throw new FriendshipException(FRIENDSHIP_REQUEST_LOCK_ACQUISITION_FAILED);

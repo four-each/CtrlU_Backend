@@ -3,6 +3,7 @@ package org.example.ctrlu.domain.user.controller;
 import org.example.ctrlu.domain.user.application.UserService;
 import org.example.ctrlu.domain.user.dto.request.UpdatePasswordRequest;
 import org.example.ctrlu.domain.user.dto.request.UpdateProfileRequest;
+import org.example.ctrlu.domain.user.dto.response.CursorResult;
 import org.example.ctrlu.domain.user.dto.response.GetProfileResponse;
 import org.example.ctrlu.domain.user.dto.response.SearchUsersResponse;
 import org.example.ctrlu.global.response.BaseResponse;
@@ -42,10 +43,12 @@ public class UserController {
 	}
 
 	@GetMapping("/search")
-	public BaseResponse<SearchUsersResponse> searchUsersByEmail(
-		@RequestParam("keyword") String keyword
+	public BaseResponse<CursorResult<SearchUsersResponse>> searchUsersByEmail(
+		@RequestParam("keyword") String keyword,
+		@RequestParam(required = false) Long cursorId,
+		@RequestParam(defaultValue = "10") int size
 	) {
-		return new BaseResponse<>(userService.searchUsersByEmail(keyword));
+		return new BaseResponse<>(userService.searchUsersByEmail(keyword, cursorId, size));
 	}
 
 	@GetMapping("profile")

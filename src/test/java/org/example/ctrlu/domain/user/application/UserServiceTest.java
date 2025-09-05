@@ -5,10 +5,13 @@ import static org.example.ctrlu.domain.user.exception.UserErrorCode.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.example.ctrlu.domain.user.dto.request.UpdatePasswordRequest;
 import org.example.ctrlu.domain.user.dto.request.UpdateProfileRequest;
+import org.example.ctrlu.domain.user.dto.response.CursorResult;
 import org.example.ctrlu.domain.user.dto.response.GetProfileResponse;
 import org.example.ctrlu.domain.user.dto.response.SearchUsersResponse;
 import org.example.ctrlu.domain.user.entity.User;
@@ -22,6 +25,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -110,18 +116,23 @@ class UserServiceTest {
 		// Given
 		String keyword = "TestUser@Example.com ";
 		String expectedSearchKeyword = "testuser@example.com";
+		Long cursorId = 1L;
+		int size = 10;
+		PageRequest pageable = PageRequest.of(0, size);
+		List<User> userList = List.of(user);
+		Slice<User> userSlice = new SliceImpl<>(userList, pageable, true);
 
-		when(userRepository.searchByEmail(expectedSearchKeyword)).thenReturn(Optional.of(user));
+		when(userRepository.findByEmailWithCursor(expectedSearchKeyword, cursorId, pageable)).thenReturn(userSlice);
 		when(awsS3Service.generateGetPresignedUrl(user.getProfileImageKey())).thenReturn("profile/123.jpg");
 
 		// When
-		SearchUsersResponse response = userService.searchUsersByEmail(keyword);
+		CursorResult<SearchUsersResponse> response = userService.searchUsersByEmail(keyword, cursorId, size);
 
 		// Then
-		assertThat(response.id()).isEqualTo(user.getId());
-		assertThat(response.email()).isEqualTo(user.getEmail());
-		assertThat(response.nickname()).isEqualTo(user.getNickname());
-		assertThat(response.image()).isEqualTo(awsS3Service.generateGetPresignedUrl(user.getProfileImageKey()));
+		assertThat(response.values().get(0).id()).isEqualTo(user.getId());
+		assertThat(response.values().get(0).email()).isEqualTo(user.getEmail());
+		assertThat(response.values().get(0).nickname()).isEqualTo(user.getNickname());
+		assertThat(response.values().get(0).image()).isEqualTo(awsS3Service.generateGetPresignedUrl(user.getProfileImageKey()));
 	}
 
 	@Test
@@ -130,15 +141,19 @@ class UserServiceTest {
 		// Given
 		String keyword = "nonexistent@example.com";
 		String expectedSearchKeyword = "nonexistent@example.com";
+		Long cursorId = 1L;
+		int size = 10;
+		PageRequest pageable = PageRequest.of(0, size);
+		Slice<User> emptySlice = new SliceImpl<>(Collections.emptyList(), pageable, true);
 
-		when(userRepository.searchByEmail(expectedSearchKeyword))
-			.thenReturn(Optional.empty());
+		when(userRepository.findByEmailWithCursor(expectedSearchKeyword, cursorId, pageable))
+			.thenReturn(emptySlice);
 
 		// When
-		SearchUsersResponse searchUsersResponse = userService.searchUsersByEmail(keyword);
+		CursorResult<SearchUsersResponse> response = userService.searchUsersByEmail(keyword, cursorId, size);
 
 		// Then
-		assertThat(searchUsersResponse).isNull();
+		assertThat(response.values().size()).isEqualTo(0);
 	}
 
 	@Test

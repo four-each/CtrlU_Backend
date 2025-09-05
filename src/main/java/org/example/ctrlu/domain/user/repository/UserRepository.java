@@ -23,7 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query("""
 		SELECT u FROM User u
 		WHERE (:cursorId IS NULL OR u.id > :cursorId)
-		  AND LOWER(u.email) LIKE CONCAT(:keyword, '%@%')
+		  AND LOWER(u.email) LIKE CONCAT(:keyword, '%')
 		  AND u.status = 'ACTIVE'
 		ORDER BY u.id ASC
 	""")
