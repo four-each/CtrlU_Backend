@@ -150,7 +150,7 @@ public class AuthController {
 	}
 
 	@GetMapping("/reset-password")
-	public Object verifyResetToken(@RequestParam("token") String token, HttpServletResponse response) {
+	public Object verifyResetToken(@RequestParam("token") String token) {
 		try {
 			boolean isComplete = authService.verifyResetToken(token);
 			String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8.toString());
@@ -168,8 +168,9 @@ public class AuthController {
 	}
 
 	@PostMapping("/reset-password")
-	public BaseResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+	public BaseResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request, HttpServletResponse response) {
 		authService.resetPassword(request);
+		clearCookie(response);
 		return new BaseResponse<>(null);
 	}
 }
