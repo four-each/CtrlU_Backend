@@ -7,6 +7,7 @@ import org.example.ctrlu.domain.user.dto.response.CursorResult;
 import org.example.ctrlu.domain.user.dto.response.GetProfileResponse;
 import org.example.ctrlu.domain.user.dto.response.SearchUsersResponse;
 import org.example.ctrlu.global.response.BaseResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -22,14 +24,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
+	@Value("${server.cookie.domain}")
+	private String COOKIE_DOMAIN;
+
 	private final UserService userService;
 
 	@PatchMapping("/password")
 	public BaseResponse<Void> updatePassword(
 		@AuthenticationPrincipal Long userId,
-		@Valid @RequestBody UpdatePasswordRequest request
+		@Valid @RequestBody UpdatePasswordRequest request,
+		HttpServletResponse response
 	) {
 		userService.updatePassword(userId, request);
+		clearCookie(response);
 		return new BaseResponse<>(null);
 	}
 
@@ -56,5 +63,13 @@ public class UserController {
 		@AuthenticationPrincipal Long userId
 	) {
 		return new BaseResponse<>(userService.getProfile(userId));
+	}
+
+	private void clearCookie(HttpServletResponse response) {
+		String cookie = "refreshToken=; Path=/;" + COOKIE_DOMAIN + "HttpOnly; Secure; Max-Age=0; SameSite=None;";
+		response.setHeader("Set-Cookie", cookie);
+		response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+		response.setHeader("Pragma", "no-cache");
+		response.setHeader("Expires", "0");
 	}
 }
