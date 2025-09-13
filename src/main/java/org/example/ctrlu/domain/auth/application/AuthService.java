@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-	private static final Long ACCESSTOKEN_EXPIRATION_TIME = (60 * 1000L); // 1분
+	private static final Long ACCESSTOKEN_EXPIRATION_TIME = (10 * 60 * 1000L); // 10분
 	private static final Long REFRESHTOKEN_EXPIRATION_TIME = (60 * 1000L) * 60 * 24 * 7; // 7일
 	private static final Long VERIFYTOKEN_EXPIRATION_TIME = 300000L; // 5분
 
