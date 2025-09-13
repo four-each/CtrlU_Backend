@@ -190,6 +190,7 @@ public class TodoService {
             return new GetRecentUploadFriendsResponse.Friend(
                     friendId,
                     awsS3Service.generateGetPresignedUrl(profileImage),
+                    todo.getUser().getNickname(),
                     status,
                     todo.getCreatedAt()
             );

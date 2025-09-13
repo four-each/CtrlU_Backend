@@ -20,6 +20,7 @@ public record GetRecentUploadFriendsResponse(
     public record Friend(
             long id,
             String profileImage,
+            String userName,
             Status status,
             LocalDateTime createdAt
     ) {}
