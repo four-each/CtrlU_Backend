@@ -11,9 +11,9 @@ spring:
 
 management:
   metrics:
-    binders:
-      processor:
-        enabled: false
+    enable:
+      system.cpu: false
+      process.cpu: false
 
 # management:
 #   endpoints:

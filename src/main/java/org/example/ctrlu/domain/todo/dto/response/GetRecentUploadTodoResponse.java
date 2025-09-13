@@ -13,6 +13,7 @@ public record GetRecentUploadTodoResponse(
         String profileImage,
         String startImage,
         String endImage,
+        String userName,
         LocalTime challengeTime,
         int durationTime,
         TodoStatus status,
@@ -20,12 +21,13 @@ public record GetRecentUploadTodoResponse(
         Long prevId,
         int totalCount
 ) {
-    public static GetRecentUploadTodoResponse from(LocalDateTime now,String profileImage, Todo todo, Long prevId, Long nextId, int totalCount, AwsS3Service awsS3Service) {
+    public static GetRecentUploadTodoResponse from(LocalDateTime now,String profileImage, String userName, Todo todo, Long prevId, Long nextId, int totalCount, AwsS3Service awsS3Service) {
         return new GetRecentUploadTodoResponse(
             todo.getTitle(),
             awsS3Service.generateGetPresignedUrl(profileImage),
             awsS3Service.generateGetPresignedUrl(todo.getStartImage()),
             awsS3Service.generateGetPresignedUrl(todo.getEndImage()),
+            userName,
             todo.getChallengeTime(),
             DurationTimeCalculator.calculate(todo, now),
             todo.getStatus(),
