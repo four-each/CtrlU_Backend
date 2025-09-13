@@ -14,6 +14,7 @@ public record GetRecentUploadFriendsResponse(
     public record Me(
             long id,
             String profileImage,
+            String userName,
             Status status
     ) {}
 

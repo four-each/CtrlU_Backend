@@ -209,14 +209,16 @@ public class TodoService {
 
 
     private GetRecentUploadFriendsResponse.Me setMyData(long userId, LocalDateTime now) {
-        String myProfileImage = userRepository.getImageById(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(NOT_FOUND_USER));
         GetRecentUploadFriendsResponse.Status status;
         boolean exists = todoRepository.existsByUserIdAndCreatedAtAfterAndStatusNot(userId, now.minusHours(24), TodoStatus.GIVEN_UP);
         status = exists ? GetRecentUploadFriendsResponse.Status.GRAY : GetRecentUploadFriendsResponse.Status.NONE;
 
         GetRecentUploadFriendsResponse.Me me = new GetRecentUploadFriendsResponse.Me(
                 userId,
-                awsS3Service.generateGetPresignedUrl(myProfileImage),
+                awsS3Service.generateGetPresignedUrl(user.getProfileImageKey()),
+                user.getNickname(),
                 status
         );
         return me;
