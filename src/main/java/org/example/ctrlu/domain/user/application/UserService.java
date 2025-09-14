@@ -51,11 +51,19 @@ public class UserService {
 			.orElseThrow(() -> new UserException(NOT_FOUND_USER));
 
 		String profileImageKey = request.profileImageKey();
-		if (profileImageKey == null || profileImageKey.isBlank()) {
+		if (profileImageKey.equals(user.getProfileImageKey())) {
+			user.updateProfile(request.nickname(), profileImageKey);
+			return;
+		}
+
+		if (profileImageKey.isBlank()) {
 			profileImageKey = defaultImageKey;
 		}
 
-		awsS3Service.deleteImage(user.getProfileImageKey());
+		if (!user.getProfileImageKey().equals(defaultImageKey)) {
+			awsS3Service.deleteImage(user.getProfileImageKey());
+		}
+
 		user.updateProfile(request.nickname(), profileImageKey);
 	}
 
