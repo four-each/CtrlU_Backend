@@ -55,7 +55,10 @@ public class UserService {
 			profileImageKey = defaultImageKey;
 		}
 
-		awsS3Service.deleteImage(user.getProfileImageKey());
+		if (!user.getProfileImageKey().equals(defaultImageKey)) {
+			awsS3Service.deleteImage(user.getProfileImageKey());
+		}
+
 		user.updateProfile(request.nickname(), profileImageKey);
 	}
 
